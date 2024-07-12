@@ -28,6 +28,10 @@ Ext.define("app.view.mainPageView", {
         }
     ],
 
+    listeners: {
+        afterrender: 'onAfterrender'
+    },
+
     columns: [{
         xtype: "rownumberer",
     }, {
@@ -98,6 +102,12 @@ Ext.define("app.view.mainPageView", {
         },
 
         items: [{
+            xtype: "button",
+            width: 160,
+            text: "Добавить",
+            tooltip: "Добавить новую запись",
+            handler: 'addNewRecord'
+        }, '->', {
             xtype: "button",
             width: 160,
             text: "Фильтры",

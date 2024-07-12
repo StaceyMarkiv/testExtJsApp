@@ -5,12 +5,15 @@ Ext.define("app.components.cityPicker", {
     xtype: 'select-city-picker',
 
     checkedCityIds: [],
+    expanded: false,
 
     listeners: {
         expand: function (field) {
             //заполняем форму редактирования значениями поля
 
-            let selectionPanel = field.up('grid').down('form').down('#citySelection');
+            let topParent = (field.up('grid')) ? field.up('grid') : field.up('window');
+
+            let selectionPanel = topParent.down('#cityPickerForm').down('#citySelection');
             selectionPanel.removeAll();
 
             let cityStore = field.lookupController().cityStore;
@@ -34,13 +37,24 @@ Ext.define("app.components.cityPicker", {
                 selectionPanel.add(checkboxEl);
             }
 
+            this.expanded = true;
         },
+        
+        specialkey: function (field, e) {
+            if (e.getKey() == e.ENTER) {
+                if (this.expanded) {
+                    this.collapse();
+                    this.expanded = false;
+                }
+            }
+        }
     },
 
     createPicker: function () {
         let me = this;
 
         return Ext.create('Ext.form.Panel', {
+            itemId: 'cityPickerForm',
             padding: 5,
             floating: true,
 
@@ -63,7 +77,7 @@ Ext.define("app.components.cityPicker", {
 
                         me.setValue(newFieldValue);
                         me.focus();
-                    }
+                    },
                 }
             }],
         });
