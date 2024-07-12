@@ -30,6 +30,16 @@ Ext.define("app.view.mainPageView", {
     columns: [{
         xtype: "rownumberer",
     }, {
+        xtype:'actioncolumn',
+        width:25,
+        menuDisabled: true,
+        menuText: 'Удаление записей',
+        items: [{
+            icon: '../../resources/images/delete.gif',
+            tooltip: 'Удалить запись',
+            handler: 'deleteUser'
+        }]
+    }, {
         text: "ID",
         dataIndex: "id_user",
         align: "center",
@@ -106,7 +116,13 @@ Ext.define("app.view.mainPageView", {
                             }
                         }, {
                             xtype: 'select-all-button',
-                        }]
+                        }],
+
+                        listeners: {
+                            beforerender: function () {
+                                console.log('beforerender');
+                            }
+                        }
                     }
                 }, {
                     text: 'Образование',
