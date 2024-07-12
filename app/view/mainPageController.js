@@ -42,6 +42,7 @@ function comboStoreFunc(tableName, id, fieldName) {
 
 //создаем хранилище для выпадающего списка ComboBox
 let [comboStoreEducation, dataStoreEducation] = comboStoreFunc('education', 'id_grade', 'grade');
+let [comboStoreCity] = comboStoreFunc('cities', 'id_city', 'city_name');
 
 //создание хранилища
 let mainPageStore = Ext.create("app.store.mainPageStore");
@@ -125,6 +126,9 @@ Ext.define('app.view.mainPageController', {
     extend: 'Ext.app.ViewController',
     alias: 'controller.mainPageController',
 
+    cityStore: comboStoreCity,      //массив всех имеющихся в БД городов
+    checkedCityIds: [],             //массив id всех отмеченных в выпадающем редакторе городов
+
     onValidateEdit: function (editor, context) {
         /*
             Метод для обработки введенного в ячейку значения
@@ -202,6 +206,14 @@ Ext.define('app.view.mainPageController', {
             };
 
             this.saveChanges('users', saveParams);
+        } else if (context.field === 'city') {
+            let saveParams = {
+                'id_user': context.record.data['id_user'],
+                'id_city': Ext.JSON.encode(this.checkedCityIds),
+            };
+
+            this.saveChanges('user_cities', saveParams);
+            this.checkedCityIds = [];
         }
 
         //обновляем таблицу
@@ -372,7 +384,7 @@ Ext.define('app.view.mainPageController', {
         //функция фильтрации хранилища по полю 'city'
         function cityFilterFunc(item) {
             let filterValues = newValue['cityItem'];
-            
+
             if (filterValues) {
                 for (const key in item.data) {
                     if (key === 'city') {
