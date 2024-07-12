@@ -232,8 +232,18 @@ Ext.define('app.view.mainPageController', {
     },
 
     addNewRecord: function (button) {
+        /*
+            Метод для обработки нажатия на кнопку "Добавить"
+            
+            Аргументы:
+            button - сама кнопка
+
+            Метод вызывает всплывающее окно с полями для заполнения, после заполнения отправляет
+            введенные данные в БД и перезагружает хранилище основной таблицы.
+        */
+
         let me = this;
-        let mainGrid = me.getView();
+        let mainGrid = button.up('grid');
 
         let win = Ext.create('Ext.window.Window', {
             title: 'Добавление нового пользователя',
@@ -304,22 +314,12 @@ Ext.define('app.view.mainPageController', {
                             Ext.Msg.alert('Предупреждение', 'Заполните имя и фамилию пользователя');
                         } else {
                             values['id_city'] = Ext.JSON.encode(me.checkedCityIds);
-    
+
                             if (values['grade'] === '') {
                                 values['grade'] = 0;
                             }
 
                             me.loadMask.show();
-
-                            let gridStore = mainGrid.getStore();
-                            // let record = new app.model.mainPageModel({
-                            //     id_user: 0,
-                            //     first_name: values['firstName'],
-                            //     last_name: values['lastName'],
-                            //     grade: values['grade'],
-                            //     city: values['id_city'],
-                            // });
-                            // gridStore.add(record);
 
                             // добавляем новую запись в БД
                             Ext.Ajax.request({
@@ -327,11 +327,11 @@ Ext.define('app.view.mainPageController', {
                                 params: values,
                                 callback: function (opts, success, response) {
                                     let res = Ext.decode(response.responseText);
-                    
+
                                     if (res.success) {
                                         me.loadMask.hide();
 
-                                        gridStore.load();
+                                        mainGrid.getStore().load();
                                     }
                                 }
                             });
