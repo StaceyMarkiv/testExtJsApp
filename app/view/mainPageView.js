@@ -6,6 +6,7 @@ Ext.define("app.view.mainPageView", {
 
     requires: [
         'app.components.selectAllButton',
+        'app.components.cityPicker',
         'app.components.userPicker',
     ],
 
@@ -80,6 +81,9 @@ Ext.define("app.view.mainPageView", {
         dataIndex: "city",
         align: "center",
         flex: 1,
+        editor: {
+            xtype: 'select-city-picker'
+        },
         filter: {
             type: 'list',
         }
