@@ -14,8 +14,8 @@ $result = pg_query($db, "SELECT users.id_user,
                                 string_agg(cities.city_name, ', ' ORDER BY cities.city_name) AS city
                         FROM $schema.users
                         JOIN $schema.education ON users.id_grade = education.id_grade
-                        JOIN $schema.user_cities ON users.id_user = user_cities.id_user
-                        JOIN $schema.cities ON cities.id_city = user_cities.id_city
+                        LEFT JOIN $schema.user_cities ON users.id_user = user_cities.id_user
+                        LEFT JOIN $schema.cities ON cities.id_city = user_cities.id_city
                         GROUP BY users.id_user, education.id_grade
                         ORDER BY users.last_name
                     ") or die('Data load failed:' . pg_last_error());

@@ -78,7 +78,7 @@ mainPageStore.load(function (records, operation, success) {
     let filterButton;
     let timer = setInterval(function () {
         filterButton = Ext.getCmp('filterButton');
-        
+
         //убеждаемся, что кнопка "Фильтры" уже отрисована
         if (filterButton) {
             clearInterval(timer);
@@ -94,7 +94,7 @@ mainPageStore.load(function (records, operation, success) {
             });
             let userCheckboxgroup = filterButton.down('#userFilter').down('#userCheckboxgroup');
             userCheckboxgroup.add(userFilterItems);
-        
+
             let gradeFilterItems = gradeFilterLabels.map((el, i) => {
                 let newEl = {
                     boxLabel: el,
@@ -106,7 +106,7 @@ mainPageStore.load(function (records, operation, success) {
             });
             let gradeCheckboxgroup = filterButton.down('#gradeFilter').down('#gradeCheckboxgroup');
             gradeCheckboxgroup.add(gradeFilterItems);
-        
+
             let cityFilterItems = cityFilterLabels.map((el, i) => {
                 let newEl = {
                     boxLabel: el,
@@ -128,6 +128,14 @@ Ext.define('app.view.mainPageController', {
 
     cityStore: comboStoreCity,      //массив всех имеющихся в БД городов
     checkedCityIds: [],             //массив id всех отмеченных в выпадающем редакторе городов
+
+    onAfterrender: function () {
+        //создаем маску загрузки
+        this.loadMask = new Ext.LoadMask({
+            msg: 'Сохранение...',
+            target: this.getView()
+        });
+    },
 
     onValidateEdit: function (editor, context) {
         /*
@@ -207,17 +215,134 @@ Ext.define('app.view.mainPageController', {
 
             this.saveChanges('users', saveParams);
         } else if (context.field === 'city') {
-            let saveParams = {
-                'id_user': context.record.data['id_user'],
-                'id_city': Ext.JSON.encode(this.checkedCityIds),
-            };
+            if (context.value !== context.originalValue) {
+                let saveParams = {
+                    'id_user': context.record.data['id_user'],
+                    'id_city': Ext.JSON.encode(this.checkedCityIds),
+                };
 
-            this.saveChanges('user_cities', saveParams);
-            this.checkedCityIds = [];
+                this.saveChanges('user_cities', saveParams);
+                this.checkedCityIds = [];
+
+            }
         }
 
         //обновляем таблицу
         grid.getView().refresh();
+    },
+
+    addNewRecord: function (button) {
+        let me = this;
+        let mainGrid = me.getView();
+
+        let win = Ext.create('Ext.window.Window', {
+            title: 'Добавление нового пользователя',
+            height: 200,
+            width: 400,
+            layout: 'fit',
+            controller: me,
+
+            listeners: {
+                close: function () {
+                    me.checkedCityIds = [];
+                }
+            },
+
+            items: {
+                xtype: 'form',
+                itemId: 'newUserForm',
+                padding: 5,
+
+                defaults: {
+                    labelAlign: 'left',
+                    labelWidth: 100,
+                    anchor: '100%',
+                },
+
+                items: [{
+                    xtype: 'textfield',
+                    itemId: 'firstName',
+                    fieldLabel: 'Имя',
+                    name: 'firstName',
+                    allowBlank: false,
+                }, {
+                    xtype: 'textfield',
+                    itemId: 'lastName',
+                    fieldLabel: 'Фамилия',
+                    name: 'lastName',
+                    allowBlank: false,
+                }, {
+                    xtype: 'combobox',
+                    itemId: 'education',
+                    fieldLabel: 'Образование',
+                    name: 'grade',
+                    typeAhead: true,
+                    triggerAction: 'all',
+                    store: comboStoreEducation,
+                    anyMatch: true,
+                    listConfig: {
+                        minWidth: 250,
+                        resizable: true
+                    }
+                }, {
+                    xtype: 'select-city-picker',
+                    itemId: 'city',
+                    fieldLabel: 'Город',
+                    name: 'city',
+                }],
+
+                buttons: [{
+                    xtype: "button",
+                    width: 160,
+                    text: "Добавить",
+                    tooltip: "Добавить новую запись",
+                    handler: function () {
+                        let form = this.up('window').down('#newUserForm');
+                        let values = form.getValues();
+
+                        if (values['firstName'] === '' || values['lastName'] === '') {
+                            Ext.Msg.alert('Предупреждение', 'Заполните имя и фамилию пользователя');
+                        } else {
+                            values['id_city'] = Ext.JSON.encode(me.checkedCityIds);
+    
+                            if (values['grade'] === '') {
+                                values['grade'] = 0;
+                            }
+
+                            me.loadMask.show();
+
+                            let gridStore = mainGrid.getStore();
+                            // let record = new app.model.mainPageModel({
+                            //     id_user: 0,
+                            //     first_name: values['firstName'],
+                            //     last_name: values['lastName'],
+                            //     grade: values['grade'],
+                            //     city: values['id_city'],
+                            // });
+                            // gridStore.add(record);
+
+                            // добавляем новую запись в БД
+                            Ext.Ajax.request({
+                                url: `app/php/add_user.php`,
+                                params: values,
+                                callback: function (opts, success, response) {
+                                    let res = Ext.decode(response.responseText);
+                    
+                                    if (res.success) {
+                                        me.loadMask.hide();
+
+                                        gridStore.load();
+                                    }
+                                }
+                            });
+
+                            win.close();
+                        }
+                    }
+                }]
+            }
+        })
+        win.show();
     },
 
     deleteUser: function (grid, rowIndex, colIndex) {
@@ -232,17 +357,15 @@ Ext.define('app.view.mainPageController', {
             Метод передает удаляет выбранную запись из локального хранилища и из БД.
         */
 
+        let me = this;
+
         let store = grid.getStore();
         let id_user = store.getAt(rowIndex).get('id_user');
 
         //удаляем из локального хранилища
         store.removeAt(rowIndex);
 
-        let loadMask = new Ext.LoadMask({
-            msg: 'Сохранение...',
-            target: this.getView()
-        });
-        loadMask.show();
+        me.loadMask.show();
 
         //удаляем из БД
         Ext.Ajax.request({
@@ -252,7 +375,7 @@ Ext.define('app.view.mainPageController', {
                 let res = Ext.decode(response.responseText);
 
                 if (res.success) {
-                    loadMask.hide();
+                    me.loadMask.hide();
                 }
             }
         });
@@ -269,11 +392,8 @@ Ext.define('app.view.mainPageController', {
             Метод передает указанные параметры для сохранения информации в БД.
         */
 
-        let loadMask = new Ext.LoadMask({
-            msg: 'Сохранение...',
-            target: this.getView()
-        });
-        loadMask.show();
+        let me = this;
+        me.loadMask.show();
 
         Ext.Ajax.request({
             url: `app/php/update_${dbTable}.php`,
@@ -282,7 +402,7 @@ Ext.define('app.view.mainPageController', {
                 let res = Ext.decode(response.responseText);
 
                 if (res.success) {
-                    loadMask.hide();
+                    me.loadMask.hide();
                 }
             }
         });
