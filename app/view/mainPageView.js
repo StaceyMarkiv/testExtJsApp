@@ -5,7 +5,8 @@ Ext.define("app.view.mainPageView", {
     controller: "mainPageController",
 
     requires: [
-        'app.components.selectAllButton'
+        'app.components.selectAllButton',
+        'app.components.userPicker',
     ],
 
     columnLines: true,
@@ -39,6 +40,9 @@ Ext.define("app.view.mainPageView", {
         dataIndex: "user",
         align: "center",
         flex: 1,
+        editor: {
+            xtype: 'change-name-picker',
+        },
         filter: {
             type: 'list',
         }

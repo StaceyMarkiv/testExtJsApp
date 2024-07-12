@@ -82,8 +82,7 @@ mainPageStore.load(function (records, operation, success) {
             checked: true,
         }
         return newEl;
-    })
-
+    });
     let userCheckboxgroup = Ext.getCmp('filterButton').down('#userFilter').down('#userCheckboxgroup');
     userCheckboxgroup.add(userFilterItems);
 
@@ -95,8 +94,7 @@ mainPageStore.load(function (records, operation, success) {
             checked: true,
         }
         return newEl;
-    })
-
+    });
     let gradeCheckboxgroup = Ext.getCmp('filterButton').down('#gradeFilter').down('#gradeCheckboxgroup');
     gradeCheckboxgroup.add(gradeFilterItems);
 
@@ -108,8 +106,7 @@ mainPageStore.load(function (records, operation, success) {
             checked: true,
         }
         return newEl;
-    })
-
+    });
     let cityCheckboxgroup = Ext.getCmp('filterButton').down('#cityFilter').down('#cityCheckboxgroup');
     cityCheckboxgroup.add(cityFilterItems);
 });
@@ -146,8 +143,9 @@ Ext.define('app.view.mainPageController', {
 
                 let saveParams = {
                     'idFieldValue': context.record.data['id_user'],
-                    'changedField': 'id_grade',
-                    'newValue': context.record.data['id_grade'],
+                    'newValues': Ext.JSON.encode({
+                        'id_grade': context.record.data['id_grade'], 
+                    }),
                 };
 
                 this.saveChanges('users', saveParams);
@@ -176,6 +174,24 @@ Ext.define('app.view.mainPageController', {
                     });
                 }
             }
+        } else if (context.field === 'user') {
+            //обработка измененного имени пользователя
+            let nameParts = context.value.split(' ');
+            let firstName = (nameParts[1]) ? nameParts[1] : '';
+            let lastName = (nameParts[0]) ? nameParts[0] : '';
+
+            context.record.data['first_name'] = firstName;
+            context.record.data['last_name'] = lastName;
+
+            let saveParams = {
+                'idFieldValue': context.record.data['id_user'],
+                'newValues': Ext.JSON.encode({
+                    'first_name': context.record.data['first_name'], 
+                    'last_name': context.record.data['last_name'],
+                }),
+            };
+
+            this.saveChanges('users', saveParams);
         }
 
         //обновляем таблицу
