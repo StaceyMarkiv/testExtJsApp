@@ -74,43 +74,51 @@ mainPageStore.load(function (records, operation, success) {
 
     //заполняем меню кнопки "Фильтры" значениями
 
-    let userFilterItems = userFilterLabels.map((el, i) => {
-        let newEl = {
-            boxLabel: el,
-            name: 'userItem',
-            inputValue: el,
-            checked: true,
-        }
-        return newEl;
-    });
-    let userCheckboxgroup = Ext.getCmp('filterButton').down('#userFilter').down('#userCheckboxgroup');
-    userCheckboxgroup.add(userFilterItems);
+    let filterButton;
+    let timer = setInterval(function () {
+        filterButton = Ext.getCmp('filterButton');
+        
+        //убеждаемся, что кнопка "Фильтры" уже отрисована
+        if (filterButton) {
+            clearInterval(timer);
 
-    console.log('userFilterItems added');
-
-    let gradeFilterItems = gradeFilterLabels.map((el, i) => {
-        let newEl = {
-            boxLabel: el,
-            name: 'gradeItem',
-            inputValue: el,
-            checked: true,
+            let userFilterItems = userFilterLabels.map((el, i) => {
+                let newEl = {
+                    boxLabel: el,
+                    name: 'userItem',
+                    inputValue: el,
+                    checked: true,
+                }
+                return newEl;
+            });
+            let userCheckboxgroup = filterButton.down('#userFilter').down('#userCheckboxgroup');
+            userCheckboxgroup.add(userFilterItems);
+        
+            let gradeFilterItems = gradeFilterLabels.map((el, i) => {
+                let newEl = {
+                    boxLabel: el,
+                    name: 'gradeItem',
+                    inputValue: el,
+                    checked: true,
+                }
+                return newEl;
+            });
+            let gradeCheckboxgroup = filterButton.down('#gradeFilter').down('#gradeCheckboxgroup');
+            gradeCheckboxgroup.add(gradeFilterItems);
+        
+            let cityFilterItems = cityFilterLabels.map((el, i) => {
+                let newEl = {
+                    boxLabel: el,
+                    name: 'cityItem',
+                    inputValue: el,
+                    checked: true,
+                }
+                return newEl;
+            });
+            let cityCheckboxgroup = filterButton.down('#cityFilter').down('#cityCheckboxgroup');
+            cityCheckboxgroup.add(cityFilterItems);
         }
-        return newEl;
-    });
-    let gradeCheckboxgroup = Ext.getCmp('filterButton').down('#gradeFilter').down('#gradeCheckboxgroup');
-    gradeCheckboxgroup.add(gradeFilterItems);
-
-    let cityFilterItems = cityFilterLabels.map((el, i) => {
-        let newEl = {
-            boxLabel: el,
-            name: 'cityItem',
-            inputValue: el,
-            checked: true,
-        }
-        return newEl;
-    });
-    let cityCheckboxgroup = Ext.getCmp('filterButton').down('#cityFilter').down('#cityCheckboxgroup');
-    cityCheckboxgroup.add(cityFilterItems);
+    }, 1000);
 });
 
 Ext.define('app.view.mainPageController', {
@@ -363,13 +371,19 @@ Ext.define('app.view.mainPageController', {
 
         //функция фильтрации хранилища по полю 'city'
         function cityFilterFunc(item) {
-            if (newValue['cityItem']) {
+            let filterValues = newValue['cityItem'];
+            
+            if (filterValues) {
                 for (const key in item.data) {
                     if (key === 'city') {
                         let cities = item.data[key].split(', ');
 
+                        if (!Array.isArray(filterValues)) {
+                            filterValues = [filterValues];
+                        }
+
                         let set1 = new Set(cities);
-                        let set2 = new Set(newValue['cityItem']);
+                        let set2 = new Set(filterValues);
 
                         //находим элементы, имеющиеся в обеих коллекциях
                         let intersection = new Set([...set1].filter(element => set2.has(element)));

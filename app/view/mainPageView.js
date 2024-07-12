@@ -117,12 +117,6 @@ Ext.define("app.view.mainPageView", {
                         }, {
                             xtype: 'select-all-button',
                         }],
-
-                        listeners: {
-                            beforerender: function () {
-                                console.log('beforerender');
-                            }
-                        }
                     }
                 }, {
                     text: 'Образование',
