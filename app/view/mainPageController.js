@@ -86,6 +86,8 @@ mainPageStore.load(function (records, operation, success) {
     let userCheckboxgroup = Ext.getCmp('filterButton').down('#userFilter').down('#userCheckboxgroup');
     userCheckboxgroup.add(userFilterItems);
 
+    console.log('userFilterItems added');
+
     let gradeFilterItems = gradeFilterLabels.map((el, i) => {
         let newEl = {
             boxLabel: el,
@@ -144,7 +146,7 @@ Ext.define('app.view.mainPageController', {
                 let saveParams = {
                     'idFieldValue': context.record.data['id_user'],
                     'newValues': Ext.JSON.encode({
-                        'id_grade': context.record.data['id_grade'], 
+                        'id_grade': context.record.data['id_grade'],
                     }),
                 };
 
@@ -186,7 +188,7 @@ Ext.define('app.view.mainPageController', {
             let saveParams = {
                 'idFieldValue': context.record.data['id_user'],
                 'newValues': Ext.JSON.encode({
-                    'first_name': context.record.data['first_name'], 
+                    'first_name': context.record.data['first_name'],
                     'last_name': context.record.data['last_name'],
                 }),
             };
@@ -196,6 +198,44 @@ Ext.define('app.view.mainPageController', {
 
         //обновляем таблицу
         grid.getView().refresh();
+    },
+
+    deleteUser: function (grid, rowIndex, colIndex) {
+        /*
+            Метод для удаления записи
+            
+            Аргументы:
+            grid - сама таблица
+            rowIndex - индекс строки в локальном хранилище
+            colIndex - индекс столбца
+
+            Метод передает удаляет выбранную запись из локального хранилища и из БД.
+        */
+
+        let store = grid.getStore();
+        let id_user = store.getAt(rowIndex).get('id_user');
+
+        //удаляем из локального хранилища
+        store.removeAt(rowIndex);
+
+        let loadMask = new Ext.LoadMask({
+            msg: 'Сохранение...',
+            target: this.getView()
+        });
+        loadMask.show();
+
+        //удаляем из БД
+        Ext.Ajax.request({
+            url: `app/php/delete_user.php`,
+            params: { 'id_user': id_user },
+            callback: function (opts, success, response) {
+                let res = Ext.decode(response.responseText);
+
+                if (res.success) {
+                    loadMask.hide();
+                }
+            }
+        });
     },
 
     saveChanges: function (dbTable, saveParams) {
@@ -381,5 +421,5 @@ Ext.define('app.view.mainPageController', {
                 el.setValue(true);
             });
         }
-    }
+    },
 });
