@@ -67,11 +67,12 @@ Ext.define("app.view.mainPageView", {
         align: "center",
         flex: 1,
         editor: new Ext.form.field.ComboBox({
-            typeAhead: true,
+            // typeAhead: true,
             triggerAction: 'all',
             store: comboStoreEducation,
             allowBlank: false,
-            anyMatch: true,
+            // anyMatch: true,
+            editable: false,
             listConfig: {
                 minWidth: 250,
                 resizable: true
