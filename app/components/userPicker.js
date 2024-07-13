@@ -3,7 +3,8 @@
 Ext.define("app.components.userPicker", {
     extend: "Ext.form.field.Picker",
     xtype: 'change-name-picker',
-
+    editable: false,
+    
     firstName: '',
     lastName: '',
 

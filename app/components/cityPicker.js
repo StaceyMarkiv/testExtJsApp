@@ -3,6 +3,7 @@
 Ext.define("app.components.cityPicker", {
     extend: "Ext.form.field.Picker",
     xtype: 'select-city-picker',
+    editable: false,
 
     checkedCityIds: [],
     expanded: false,

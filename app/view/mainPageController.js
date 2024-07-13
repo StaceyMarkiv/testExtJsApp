@@ -286,10 +286,11 @@ Ext.define('app.view.mainPageController', {
                     itemId: 'education',
                     fieldLabel: 'Образование',
                     name: 'grade',
-                    typeAhead: true,
+                    // typeAhead: true,
                     triggerAction: 'all',
                     store: comboStoreEducation,
-                    anyMatch: true,
+                    // anyMatch: true,
+                    editable: false,
                     listConfig: {
                         minWidth: 250,
                         resizable: true
