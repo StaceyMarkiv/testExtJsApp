@@ -7,6 +7,7 @@ require_once "db_connection.php";
 $result = pg_query($db, "SELECT users.id_user,
                                 users.first_name,
                                 users.last_name,
+                                users.has_car::int,
 
                                 education.id_grade,
                                 education.grade,
@@ -20,6 +21,17 @@ $result = pg_query($db, "SELECT users.id_user,
                         ORDER BY users.last_name
                     ") or die('Data load failed:' . pg_last_error());
 
-$rows = pg_fetch_all($result);
+$rows = [];
+while ($row = pg_fetch_assoc($result)) {
+    $rows[] = array(
+        'id_user' => $row['id_user'],
+        'first_name' => $row['first_name'],
+        'last_name' => $row['last_name'],
+        'has_car' => (bool) $row['has_car'],        //принудительно конвертируем в bool
+        'id_grade' => $row['id_grade'],
+        'grade' => $row['grade'],
+        'city' => $row['city'],
+    );
+}
 
 echo json_encode($rows);
