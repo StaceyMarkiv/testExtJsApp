@@ -51,6 +51,47 @@ SET default_tablespace = '';
 SET default_with_oids = false;
 
 --
+-- Name: cars; Type: TABLE; Schema: test; Owner: postgres
+--
+
+CREATE TABLE test.cars (
+    id_car bigint NOT NULL,
+    car_brand character varying(100),
+    color character varying(20)
+);
+
+
+ALTER TABLE test.cars OWNER TO postgres;
+
+--
+-- Name: TABLE cars; Type: COMMENT; Schema: test; Owner: postgres
+--
+
+COMMENT ON TABLE test.cars IS 'Данные о машинах';
+
+
+--
+-- Name: COLUMN cars.id_car; Type: COMMENT; Schema: test; Owner: postgres
+--
+
+COMMENT ON COLUMN test.cars.id_car IS 'id записи';
+
+
+--
+-- Name: COLUMN cars.car_brand; Type: COMMENT; Schema: test; Owner: postgres
+--
+
+COMMENT ON COLUMN test.cars.car_brand IS 'Марка машины';
+
+
+--
+-- Name: COLUMN cars.color; Type: COMMENT; Schema: test; Owner: postgres
+--
+
+COMMENT ON COLUMN test.cars.color IS 'Цвет машины';
+
+
+--
 -- Name: cities; Type: TABLE; Schema: test; Owner: postgres
 --
 
@@ -165,7 +206,9 @@ CREATE TABLE test.users (
     id_user bigint NOT NULL,
     first_name character varying(100),
     last_name character varying(100),
-    id_grade bigint DEFAULT 0
+    id_grade bigint DEFAULT 0,
+    birthday date,
+    has_car boolean
 );
 
 
@@ -204,6 +247,28 @@ COMMENT ON COLUMN test.users.last_name IS 'Фамилия пользовател
 --
 
 COMMENT ON COLUMN test.users.id_grade IS 'id оконченной ступени образования пользователя';
+
+
+--
+-- Name: COLUMN users.birthday; Type: COMMENT; Schema: test; Owner: postgres
+--
+
+COMMENT ON COLUMN test.users.birthday IS 'Дата рождения';
+
+
+--
+-- Name: COLUMN users.has_car; Type: COMMENT; Schema: test; Owner: postgres
+--
+
+COMMENT ON COLUMN test.users.has_car IS 'Наличие машины (да/нет)';
+
+
+--
+-- Data for Name: cars; Type: TABLE DATA; Schema: test; Owner: postgres
+--
+
+COPY test.cars (id_car, car_brand, color) FROM stdin;
+\.
 
 
 --
@@ -252,26 +317,29 @@ COPY test.education (id_grade, grade) FROM stdin;
 COPY test.user_cities (id, id_user, id_city) FROM stdin;
 1	1	1
 2	1	10
-3	2	3
-4	2	8
-5	2	11
 6	3	2
 7	3	8
 8	4	15
 9	5	5
 10	5	9
 11	5	3
-12	6	12
-13	7	13
-14	7	14
-15	8	6
-16	8	3
-17	8	7
-18	9	1
-19	9	11
-20	9	15
-21	10	8
-22	10	5
+22	8	8
+23	8	5
+24	8	4
+27	12	8
+28	11	1
+29	11	4
+30	13	5
+31	13	13
+32	13	15
+36	15	11
+39	7	14
+40	7	7
+41	7	2
+42	7	10
+43	9	6
+44	9	5
+45	9	2
 \.
 
 
@@ -279,18 +347,27 @@ COPY test.user_cities (id, id_user, id_city) FROM stdin;
 -- Data for Name: users; Type: TABLE DATA; Schema: test; Owner: postgres
 --
 
-COPY test.users (id_user, first_name, last_name, id_grade) FROM stdin;
-1	John	Smith	1
-4	David	Nolan	1
-2	Steven	Robertson	2
-3	Mattew	Connor	3
-6	Matilda	Vane	5
-5	Anna	Daniels	6
-9	Nina	Ricci	7
-7	Julia	Simpson	2
-10	Samantha	Page	4
-8	Laura	Palmers	0
+COPY test.users (id_user, first_name, last_name, id_grade, birthday, has_car) FROM stdin;
+8	Laura	Palmers	0	\N	\N
+5	Anna	Daniels	6	\N	\N
+1	John	Carter	1	\N	f
+15	Lisa	Avery	2	\N	t
+13	Laura	Jefferson	1	\N	f
+9	Nina	Ricci	7	\N	t
+7	Rosa	Simpson	3	\N	t
+11	Justin	Eduson	6	\N	t
+12	Angela	Linney	4	\N	f
+4	David	Nolan	5	\N	t
+3	Mattew	Connor	3	\N	t
 \.
+
+
+--
+-- Name: cars cars_pkey; Type: CONSTRAINT; Schema: test; Owner: postgres
+--
+
+ALTER TABLE ONLY test.cars
+    ADD CONSTRAINT cars_pkey PRIMARY KEY (id_car);
 
 
 --
