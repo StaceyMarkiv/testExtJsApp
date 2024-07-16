@@ -92,6 +92,15 @@ Ext.define("app.view.mainPageView", {
         filter: {
             type: 'list',
         }
+    }, {
+        text: "Машина",
+        xtype: 'checkcolumn',
+        dataIndex: "has_car",
+        align: "center",
+        width: 100,
+        listeners: {
+            checkchange: 'carCheckchange'
+        }
     }],
 
     dockedItems: [{

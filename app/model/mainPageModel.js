@@ -1,7 +1,7 @@
 Ext.define('app.model.mainPageModel', {
     extend: 'Ext.data.Model',
     fields: [
-        { name: 'id_user' , type: 'int'},
+        { name: 'id_user', type: 'int' },
         { name: 'first_name', type: 'string' },
         { name: 'last_name', type: 'string' },
         { name: 'grade', type: 'string' },
@@ -12,5 +12,6 @@ Ext.define('app.model.mainPageModel', {
                 return record.get('last_name') + ' ' + record.get('first_name');
             }
         },
+        { name: 'has_car', type: 'bool', },
     ]
 });

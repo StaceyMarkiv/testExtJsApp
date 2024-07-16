@@ -370,19 +370,19 @@ Ext.define('app.view.mainPageController', {
                 if (btn === 'ok') {
                     let store = grid.getStore();
                     let id_user = store.getAt(rowIndex).get('id_user');
-            
+
                     //удаляем из локального хранилища
                     store.removeAt(rowIndex);
-            
+
                     me.loadMask.show();
-            
+
                     //удаляем из БД
                     Ext.Ajax.request({
                         url: `app/php/delete_user.php`,
                         params: { 'id_user': id_user },
                         callback: function (opts, success, response) {
                             let res = Ext.decode(response.responseText);
-            
+
                             if (res.success) {
                                 me.loadMask.hide();
                             }
@@ -579,5 +579,31 @@ Ext.define('app.view.mainPageController', {
                 el.setValue(true);
             });
         }
+    },
+
+    carCheckchange: function (checkcolumn, rowIndex, checked) {
+        /*
+            Метод для обработки галочки в столбце checkcolumn
+            
+            Аргументы функции:
+            checkcolumn - сам столбец checkcolumn
+            rowIndex - индекс строки, в которой произошло изменение
+            checked - true, если в ячейке стоит галочка
+ 
+            Метод обрабатывает клик по столбцу checkcolumn и сохраняет изменения в БД.
+        */
+
+        let grid = checkcolumn.up('grid');
+        let changedRecord = grid.getStore().getAt(rowIndex);      //запись, в которой сделаны изменения
+        changedRecord.commit();
+
+        let saveParams = {
+            'idFieldValue': changedRecord.get('id_user'),
+            'newValues': Ext.JSON.encode({
+                'has_car': `${checked}`,        //отправлять в виде строки, иначе при конвертации false потеряется
+            }),
+        };
+
+        this.saveChanges('users', saveParams);
     },
 });
