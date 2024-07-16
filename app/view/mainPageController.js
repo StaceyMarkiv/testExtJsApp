@@ -360,25 +360,36 @@ Ext.define('app.view.mainPageController', {
 
         let me = this;
 
-        let store = grid.getStore();
-        let id_user = store.getAt(rowIndex).get('id_user');
-
-        //удаляем из локального хранилища
-        store.removeAt(rowIndex);
-
-        me.loadMask.show();
-
-        //удаляем из БД
-        Ext.Ajax.request({
-            url: `app/php/delete_user.php`,
-            params: { 'id_user': id_user },
-            callback: function (opts, success, response) {
-                let res = Ext.decode(response.responseText);
-
-                if (res.success) {
-                    me.loadMask.hide();
+        Ext.Msg.show({
+            title: 'Предупреждение',
+            message: 'Вы точно хотите удалить пользователя?',
+            width: 300,
+            buttons: Ext.Msg.OKCANCEL,
+            icon: Ext.window.MessageBox.WARNING,
+            fn: function (btn) {
+                if (btn === 'ok') {
+                    let store = grid.getStore();
+                    let id_user = store.getAt(rowIndex).get('id_user');
+            
+                    //удаляем из локального хранилища
+                    store.removeAt(rowIndex);
+            
+                    me.loadMask.show();
+            
+                    //удаляем из БД
+                    Ext.Ajax.request({
+                        url: `app/php/delete_user.php`,
+                        params: { 'id_user': id_user },
+                        callback: function (opts, success, response) {
+                            let res = Ext.decode(response.responseText);
+            
+                            if (res.success) {
+                                me.loadMask.hide();
+                            }
+                        }
+                    });
                 }
-            }
+            },
         });
     },
 
