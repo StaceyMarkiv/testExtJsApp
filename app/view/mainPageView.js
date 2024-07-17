@@ -143,11 +143,11 @@ Ext.define("app.view.mainPageView", {
             text: "Действия",
             id: "actionsButton",
             menu: {
-                width: 200,
+                width: 260,
                 items: [{
                     xtype: 'checkbox',
                     itemId: 'showCarOwnersCheckbox',
-                    boxLabel: 'Пользователи с машиной',
+                    boxLabel: 'Показать пользователей с машиной',
                     name: 'carOwners',
                     inputValue: true,
                     padding: '0 0 0 5',
