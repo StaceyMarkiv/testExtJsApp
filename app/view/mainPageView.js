@@ -32,11 +32,31 @@ Ext.define("app.view.mainPageView", {
         afterrender: 'onAfterrender'
     },
 
+    viewConfig: {
+        getRowClass: function (record, rowIndex, rowParams, store) {
+            //добавляем каждой строке css класс, опеределяющий ее цвет
+
+            let showCarOwners = Ext.getCmp('actionsButton').down('#showCarOwnersCheckbox').getValue();      //подсветить пользователей с машиной
+
+            let newRowClass = '';
+            if (['blue'].includes(record.get('row_color'))) {
+                switch (record.get('row_color')) {
+                    case 'blue':
+                        newRowClass = (showCarOwners) ? 'has_car' : '';
+                        break;
+                    default:
+                        newRowClass = '';
+                }
+            }
+            return newRowClass;
+        }
+    },
+
     columns: [{
         xtype: "rownumberer",
     }, {
-        xtype:'actioncolumn',
-        width:25,
+        xtype: 'actioncolumn',
+        width: 25,
         menuDisabled: true,
         menuText: 'Удаление записей',
         items: [{
@@ -117,6 +137,25 @@ Ext.define("app.view.mainPageView", {
             text: "Добавить",
             tooltip: "Добавить новую запись",
             handler: 'addNewRecord'
+        }, '->', {
+            xtype: "button",
+            width: 160,
+            text: "Действия",
+            id: "actionsButton",
+            menu: {
+                width: 200,
+                items: [{
+                    xtype: 'checkbox',
+                    itemId: 'showCarOwnersCheckbox',
+                    boxLabel: 'Пользователи с машиной',
+                    name: 'carOwners',
+                    inputValue: true,
+                    padding: '0 0 0 5',
+                    listeners: {
+                        change: 'showCarOwnersFunc'
+                    }
+                }],
+            }
         }, '->', {
             xtype: "button",
             width: 160,
