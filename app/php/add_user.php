@@ -16,9 +16,10 @@ $first_name = $_POST['firstName'];
 $last_name = $_POST['lastName'];
 $id_grade = $_POST['grade'];
 $id_city_arr = json_decode($_POST['id_city']);
+$has_car = $_POST['hasCar'];
 
-$db_query3 = "INSERT INTO $schema.users (id_user, first_name, last_name, id_grade)
-            VALUES ($new_id_user, '$first_name', '$last_name', $id_grade);";
+$db_query3 = "INSERT INTO $schema.users (id_user, first_name, last_name, id_grade, has_car)
+            VALUES ($new_id_user, '$first_name', '$last_name', $id_grade, $has_car);";
 
 if ($id_city_arr != null) {
     if (!is_array($id_city_arr)) {

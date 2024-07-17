@@ -247,7 +247,7 @@ Ext.define('app.view.mainPageController', {
 
         let win = Ext.create('Ext.window.Window', {
             title: 'Добавление нового пользователя',
-            height: 200,
+            height: 230,
             width: 400,
             layout: 'fit',
             controller: me,
@@ -300,6 +300,12 @@ Ext.define('app.view.mainPageController', {
                     itemId: 'city',
                     fieldLabel: 'Город',
                     name: 'city',
+                }, {
+                    xtype: 'checkbox',
+                    itemId: 'hasCar',
+                    fieldLabel: 'Машина',
+                    name: 'hasCar',
+                    inputValue: true,
                 }],
 
                 buttons: [{
@@ -314,11 +320,14 @@ Ext.define('app.view.mainPageController', {
                         if (values['firstName'] === '' || values['lastName'] === '') {
                             Ext.Msg.alert('Предупреждение', 'Заполните имя и фамилию пользователя');
                         } else {
+                            //приводим значения параметров к нужному виду (при необходимости)
                             values['id_city'] = Ext.JSON.encode(me.checkedCityIds);
 
                             if (values['grade'] === '') {
                                 values['grade'] = 0;
                             }
+
+                            values['hasCar'] = (values['hasCar']) ? `${values['hasCar']}` : 'false';     //отправлять в виде строки, иначе при конвертации false потеряется
 
                             me.loadMask.show();
 
