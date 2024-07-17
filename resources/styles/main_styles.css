@@ -1,0 +1,4 @@
+/* цвет записей у пользователей, имеющих машины */
+.has_car {
+    background-color: cornflowerblue;
+}

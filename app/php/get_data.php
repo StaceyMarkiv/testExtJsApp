@@ -12,7 +12,10 @@ $result = pg_query($db, "SELECT users.id_user,
                                 education.id_grade,
                                 education.grade,
                                 
-                                string_agg(cities.city_name, ', ' ORDER BY cities.city_name) AS city
+                                string_agg(cities.city_name, ', ' ORDER BY cities.city_name) AS city,
+                                CASE WHEN users.has_car = true THEN 'blue'
+                                    ELSE NULL
+                                END AS row_color
                         FROM $schema.users
                         JOIN $schema.education ON users.id_grade = education.id_grade
                         LEFT JOIN $schema.user_cities ON users.id_user = user_cities.id_user
@@ -31,6 +34,7 @@ while ($row = pg_fetch_assoc($result)) {
         'id_grade' => $row['id_grade'],
         'grade' => $row['grade'],
         'city' => $row['city'],
+        'row_color' => $row['row_color'],
     );
 }
 

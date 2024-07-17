@@ -595,6 +595,12 @@ Ext.define('app.view.mainPageController', {
 
         let grid = checkcolumn.up('grid');
         let changedRecord = grid.getStore().getAt(rowIndex);      //запись, в которой сделаны изменения
+
+        //меняем подсветку записи в зависимости от наличия / отсутствия галочки
+        changedRecord.set({
+            row_color: (checked) ? 'blue' : '',
+        });
+
         changedRecord.commit();
 
         let saveParams = {
@@ -605,5 +611,20 @@ Ext.define('app.view.mainPageController', {
         };
 
         this.saveChanges('users', saveParams);
+    },
+
+    showCarOwnersFunc: function (checkbox, newValue) {
+        /*
+            Метод для обработки постановки/снятия галочки в чекбоксе 'Пользователи с машиной' в меню
+            кнопки 'Действия'
+            
+            Аргументы:
+            checkbox - сам чекбокс
+            newValue - стоит ли галочка (true / false)
+
+            Метод обновляет форму для отображения новой подсветки записей.
+        */
+
+        checkbox.up('grid').getView().refresh();
     },
 });
