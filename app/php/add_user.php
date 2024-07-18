@@ -1,15 +1,17 @@
 <?php
-//сохранение изменений в таблице users
+//добавление новой записи в таблицу users
 
 //подключение к БД
 require_once "db_connection.php";
 
+$error_msg = 'Data load failed:' . pg_last_error();     //сообщение об ошибке выполнения запроса
+
 $db_query1 = "SELECT max(id_user)+1 FROM $schema.users";
-$res_user = pg_query($db, $db_query1) or die('Data load failed:' . pg_last_error());
+$res_user = pg_query($db, $db_query1) or die($error_msg);
 $new_id_user = pg_fetch_all_columns($res_user, 0)[0];
 
 $db_query2 = "SELECT max(id)+1 FROM $schema.user_cities";
-$res_user_cities = pg_query($db, $db_query2) or die('Data load failed:' . pg_last_error());
+$res_user_cities = pg_query($db, $db_query2) or die($error_msg);
 $max_id_user_cities = pg_fetch_all_columns($res_user_cities, 0)[0];
 
 $first_name = $_POST['firstName'];
@@ -38,6 +40,6 @@ if ($id_city_arr != null) {
                     VALUES $city_values_statement;";
 }
 
-pg_query($db, $db_query3) or die('Data load failed:' . pg_last_error());
+pg_query($db, $db_query3) or die($error_msg);
 
 echo "{'success': true}";
