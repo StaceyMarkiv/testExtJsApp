@@ -128,6 +128,8 @@ Ext.define('app.view.mainPageController', {
 
     cityStore: comboStoreCity,      //массив всех имеющихся в БД городов
     checkedCityIds: [],             //массив id всех отмеченных в выпадающем редакторе городов
+    saveFinished: true,             //индикатор окончания загрузки в БД
+    id_user: null,                  //id выбранного пользователя
 
     onAfterrender: function () {
         //создаем маску загрузки
@@ -170,6 +172,7 @@ Ext.define('app.view.mainPageController', {
                     }),
                 };
 
+                this.saveFinished = false;
                 this.saveChanges('users', saveParams);
             } else {
                 if (context.value === context.originalValue && id !== -1) {      //если значение в ячейке не поменялось
@@ -213,6 +216,7 @@ Ext.define('app.view.mainPageController', {
                 }),
             };
 
+            this.saveFinished = false;
             this.saveChanges('users', saveParams);
         } else if (context.field === 'city') {
             if (context.value !== context.originalValue) {
@@ -221,9 +225,9 @@ Ext.define('app.view.mainPageController', {
                     'id_city': Ext.JSON.encode(this.checkedCityIds),
                 };
 
+                this.saveFinished = false;
                 this.saveChanges('user_cities', saveParams);
                 this.checkedCityIds = [];
-
             }
         }
 
@@ -424,6 +428,7 @@ Ext.define('app.view.mainPageController', {
 
                 if (res.success) {
                     me.loadMask.hide();
+                    me.saveFinished = true;
                 }
             }
         });
@@ -592,16 +597,21 @@ Ext.define('app.view.mainPageController', {
 
     carCheckchange: function (checkcolumn, rowIndex, checked) {
         /*
-            Метод для обработки галочки в столбце checkcolumn
+            Метод для обработки галочки в столбце "Машина"
             
             Аргументы функции:
-            checkcolumn - сам столбец checkcolumn
+            checkcolumn - сам столбец
             rowIndex - индекс строки, в которой произошло изменение
             checked - true, если в ячейке стоит галочка
  
-            Метод обрабатывает клик по столбцу checkcolumn и сохраняет изменения в БД.
+            Метод выполняет следующие действия:
+                - обрабатывает клик по столбцу checkcolumn и добавляет / убирает параметр для класса
+                    подсветки записи
+                - при постановке галочки открывает всплывающее окно для внесения информации о машине
+                - сохраняет все изменения в БД
         */
 
+        let me = this;
         let grid = checkcolumn.up('grid');
         let changedRecord = grid.getStore().getAt(rowIndex);      //запись, в которой сделаны изменения
 
@@ -612,14 +622,114 @@ Ext.define('app.view.mainPageController', {
 
         changedRecord.commit();
 
+        me.id_user = changedRecord.get('id_user');
+
         let saveParams = {
-            'idFieldValue': changedRecord.get('id_user'),
+            'idFieldValue': me.id_user,
             'newValues': Ext.JSON.encode({
                 'has_car': `${checked}`,        //отправлять в виде строки, иначе при конвертации false потеряется
             }),
         };
 
-        this.saveChanges('users', saveParams);
+        me.saveFinished = false;
+        me.saveChanges('users', saveParams);
+
+        if (checked) {
+            let timer = setInterval(function () {
+                //убеждаемся, что сохранение в БД окончено
+                if (me.saveFinished) {
+                    clearInterval(timer);
+
+                    //вызываем форму заполнения данных о машине
+                    me.addNewCar();
+                }
+            }, 500);
+        }
+    },
+
+    addNewCar: function () {
+        /*
+            Метод для создания всплывающего окна с полями для заполнения информации о новой машине.
+            После заполнения отправляет введенные данные в БД.
+        */
+
+        let me = this;
+
+        let win = Ext.create('Ext.window.Window', {
+            title: 'Добавление машины пользователя',
+            height: 140,
+            width: 400,
+            layout: 'fit',
+
+            listeners: {
+                close: function () {
+                    me.id_user = null;
+                }
+            },
+
+            items: {
+                xtype: 'form',
+                itemId: 'newCarForm',
+                padding: 5,
+
+                defaults: {
+                    labelAlign: 'left',
+                    labelWidth: 100,
+                    anchor: '100%',
+                },
+
+                items: [{
+                    xtype: 'textfield',
+                    itemId: 'carBrand',
+                    fieldLabel: 'Марка машины',
+                    name: 'carBrand',
+                    allowBlank: false,
+                }, {
+                    xtype: 'textfield',
+                    itemId: 'color',
+                    fieldLabel: 'Цвет',
+                    name: 'color',
+                    allowBlank: false,
+                }],
+
+                buttons: [{
+                    xtype: "button",
+                    width: 160,
+                    text: "Добавить",
+                    tooltip: "Добавить машину",
+                    handler: function () {
+                        let form = this.up('window').down('#newCarForm');
+                        let values = form.getValues();
+
+                        if (values['carBrand'] === '' || values['color'] === '') {
+                            Ext.Msg.alert('Предупреждение', 'Заполните информацию о машине');
+                        } else {
+                            values['idFieldValue'] = me.id_user;
+
+                            me.loadMask.show();
+
+                            // добавляем новую запись в БД
+                            Ext.Ajax.request({
+                                url: `app/php/add_car.php`,
+                                params: values,
+                                callback: function (opts, success, response) {
+                                    let res = Ext.decode(response.responseText);
+
+                                    if (res.success) {
+                                        me.loadMask.hide();
+
+                                        me.id_user = null;
+                                    }
+                                }
+                            });
+
+                            win.close();
+                        }
+                    }
+                }]
+            }
+        })
+        win.show();
     },
 
     showCarOwnersFunc: function (checkbox, newValue) {
@@ -637,3 +747,19 @@ Ext.define('app.view.mainPageController', {
         checkbox.up('grid').getView().refresh();
     },
 });
+
+/*
+TODO:
+- в меню кнопки "Действия" добавить подсветку пользователей, у которых машины с дефолтными данными
+- в actioncolumn добавить пункт "Инфо
+- в actioncolumn добавить пункт "Информация", открывающий всплывающее окно с полной информацией по каждому пользователю
+(propertygrid)
+- во всплывающее окно с информацией о пользователе добавить возможность редактирования
+- при постановке галочки в поле "Машины" формы нового пользователя показывать поля для данных о машине. При убирании галочки
+эти поля скрываются
+- меню со статистикой в кнопку "Действия":
+    - статистика по машинам
+    - статистика по городам
+    Статистика отображается в виде диаграмм (столбчатая, круговая)
+- добавить возможность сохранять диаграммы в png
+*/
