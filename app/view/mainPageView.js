@@ -74,7 +74,7 @@ Ext.define("app.view.mainPageView", {
         dataIndex: "id_user",
         align: "center",
         hidden: true,
-        flex: 1,
+        width: 60,
     }, {
         text: "Пользователь",
         dataIndex: "user",

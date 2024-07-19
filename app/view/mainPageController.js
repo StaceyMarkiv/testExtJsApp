@@ -265,7 +265,7 @@ Ext.define('app.view.mainPageController', {
             items: {
                 xtype: 'form',
                 itemId: 'newUserForm',
-                padding: 5,
+                padding: '10 5 5 5',
 
                 defaults: {
                     labelAlign: 'left',
@@ -310,6 +310,36 @@ Ext.define('app.view.mainPageController', {
                     fieldLabel: 'Машина',
                     name: 'hasCar',
                     inputValue: true,
+                    handler: function (checkbox, newValue) {
+                        //если стоит галочка, показываем поля для заполнения данных о машине
+                        //если галочка убрана, эти поля скрываем
+
+                        if (newValue) {
+                            win.setHeight(win.getHeight() + 60);
+                            checkbox.up('form').down('#carBrand').show();
+                            checkbox.up('form').down('#color').show();
+                        } else {
+                            win.setHeight(win.getHeight() - 60);
+                            checkbox.up('form').down('#carBrand').hide();
+                            checkbox.up('form').down('#color').hide();
+                        }
+                    }
+                }, {
+                    xtype: 'textfield',
+                    itemId: 'carBrand',
+                    fieldLabel: 'Марка машины',
+                    name: 'car_brand',
+                    allowBlank: false,
+                    emptyText: 'new_car',
+                    hidden: true,
+                }, {
+                    xtype: 'textfield',
+                    itemId: 'color',
+                    fieldLabel: 'Цвет',
+                    name: 'color',
+                    allowBlank: false,
+                    emptyText: 'new_color',
+                    hidden: true,
                 }],
 
                 buttons: [{
@@ -617,8 +647,13 @@ Ext.define('app.view.mainPageController', {
 
         //меняем подсветку записи в зависимости от наличия / отсутствия галочки
         changedRecord.set({
-            row_color: (checked) ? 'blue' : '',
+            has_car_color: (checked) ? 'blue' : '',
         });
+        if (changedRecord.get('default_car_color')) {
+            changedRecord.set({
+                default_car_color: (checked) ? 'red' : '',
+            });
+        }
 
         changedRecord.commit();
 
@@ -663,6 +698,14 @@ Ext.define('app.view.mainPageController', {
 
             listeners: {
                 close: function () {
+                    //добавляем записи цветовые метки
+                    let store = me.getView().getStore();
+                    let selectedRec = store.findRecord('id_user', me.id_user, 0, false, false, true);
+                    selectedRec.set({
+                        has_car_color: 'blue',
+                        default_car_color: 'red',
+                    });
+
                     me.id_user = null;
                 }
             },
@@ -763,18 +806,15 @@ Ext.define('app.view.mainPageController', {
             Метод обновляет форму для отображения новой подсветки записей.
         */
 
-            checkbox.up('grid').getView().refresh();
+        checkbox.up('grid').getView().refresh();
     },
 });
 
 /*
 TODO:
-- в меню кнопки "Действия" добавить подсветку пользователей, у которых машины с дефолтными данными
 - в actioncolumn добавить пункт "Информация", открывающий всплывающее окно с полной информацией по каждому пользователю
 (propertygrid)
 - во всплывающее окно с информацией о пользователе добавить возможность редактирования
-- при постановке галочки в поле "Машины" формы нового пользователя показывать поля для данных о машине. При убирании галочки
-эти поля скрываются
 - меню со статистикой в кнопку "Действия":
     - статистика по машинам
     - статистика по городам
