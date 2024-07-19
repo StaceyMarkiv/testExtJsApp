@@ -2,3 +2,8 @@
 .has_car {
     background-color: cornflowerblue;
 }
+
+/* цвет записей у пользователей, у которых для машины указаны данные п умолчанию */
+.default_cars {
+    background-color: tomato;
+}

@@ -37,17 +37,22 @@ Ext.define("app.view.mainPageView", {
             //добавляем каждой строке css класс, опеределяющий ее цвет
 
             let showCarOwners = Ext.getCmp('actionsButton').down('#showCarOwnersCheckbox').getValue();      //подсветить пользователей с машиной
+            let showDefaultCars = Ext.getCmp('actionsButton').down('#showDefaultCarsCheckbox').getValue();      //машины с данными по умолчанию
 
             let newRowClass = '';
-            if (['blue'].includes(record.get('row_color'))) {
-                switch (record.get('row_color')) {
-                    case 'blue':
-                        newRowClass = (showCarOwners) ? 'has_car' : '';
-                        break;
-                    default:
-                        newRowClass = '';
+
+            if (record.get('has_car_color') === 'blue') {
+                newRowClass = (showCarOwners) ? 'has_car' : '';
+            }
+
+            if (record.get('default_car_color') === 'red') {
+                if (newRowClass) {
+                    newRowClass = (showDefaultCars) ? newRowClass + ' default_cars' : newRowClass;
+                } else {
+                    newRowClass = (showDefaultCars) ? 'default_cars' : '';
                 }
             }
+
             return newRowClass;
         }
     },
@@ -143,16 +148,25 @@ Ext.define("app.view.mainPageView", {
             text: "Действия",
             id: "actionsButton",
             menu: {
-                width: 260,
+                width: 350,
+                padding: '5 0 5 0',
                 items: [{
                     xtype: 'checkbox',
                     itemId: 'showCarOwnersCheckbox',
                     boxLabel: 'Показать пользователей с машиной',
                     name: 'carOwners',
                     inputValue: true,
-                    padding: '0 0 0 5',
                     listeners: {
                         change: 'showCarOwnersFunc'
+                    }
+                }, {
+                    xtype: 'checkbox',
+                    itemId: 'showDefaultCarsCheckbox',
+                    boxLabel: 'Показать машины с данными по умолчанию',
+                    name: 'carOwners',
+                    inputValue: true,
+                    listeners: {
+                        change: 'showDefaultCarsFunc'
                     }
                 }],
             }
@@ -173,6 +187,8 @@ Ext.define("app.view.mainPageView", {
                             hideEmptyLabel: true,
                             columns: 1,
                             width: 200,
+                            scrollable: true,
+                            maxHeight: 250,
                             items: [],
                             listeners: {
                                 change: 'userFilterChange'
@@ -209,6 +225,8 @@ Ext.define("app.view.mainPageView", {
                             hideEmptyLabel: true,
                             columns: 1,
                             width: 150,
+                            scrollable: true,
+                            maxHeight: 250,
                             items: [],
                             listeners: {
                                 change: 'cityFilterChange'

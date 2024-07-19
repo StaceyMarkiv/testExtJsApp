@@ -684,12 +684,14 @@ Ext.define('app.view.mainPageController', {
                     fieldLabel: 'Марка машины',
                     name: 'carBrand',
                     allowBlank: false,
+                    emptyText: 'new_car',
                 }, {
                     xtype: 'textfield',
                     itemId: 'color',
                     fieldLabel: 'Цвет',
                     name: 'color',
                     allowBlank: false,
+                    emptyText: 'new_color',
                 }],
 
                 buttons: [{
@@ -719,6 +721,8 @@ Ext.define('app.view.mainPageController', {
                                         me.loadMask.hide();
 
                                         me.id_user = null;
+
+                                        me.getView().getView().refresh();
                                     }
                                 }
                             });
@@ -746,12 +750,26 @@ Ext.define('app.view.mainPageController', {
 
         checkbox.up('grid').getView().refresh();
     },
+
+    showDefaultCarsFunc: function (checkbox, newValue) {
+        /*
+            Метод для обработки постановки/снятия галочки в чекбоксе 'Машины с данными по умолчанию' в меню
+            кнопки 'Действия'
+            
+            Аргументы:
+            checkbox - сам чекбокс
+            newValue - стоит ли галочка (true / false)
+
+            Метод обновляет форму для отображения новой подсветки записей.
+        */
+
+            checkbox.up('grid').getView().refresh();
+    },
 });
 
 /*
 TODO:
 - в меню кнопки "Действия" добавить подсветку пользователей, у которых машины с дефолтными данными
-- в actioncolumn добавить пункт "Инфо
 - в actioncolumn добавить пункт "Информация", открывающий всплывающее окно с полной информацией по каждому пользователю
 (propertygrid)
 - во всплывающее окно с информацией о пользователе добавить возможность редактирования
