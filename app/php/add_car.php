@@ -12,6 +12,6 @@ $db_query = "UPDATE $schema.cars
             SET car_brand='$car_brand', color='$color'
             WHERE id_user=$id_user";
 
-pg_query($db, $db_query) or die('Data load failed:' . pg_last_error());
+pg_query($db, $db_query) or die('Data load failed:' . pg_last_error() . 'sql = ' . $db_query);
 
 echo "{'success': true}";

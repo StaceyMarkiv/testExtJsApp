@@ -8,17 +8,17 @@ $error_msg = 'Data load failed:' . pg_last_error();     //сообщение о�
 
 //получаем макс. id в таблице users
 $db_query1 = "SELECT max(id_user)+1 FROM $schema.users";
-$res_user = pg_query($db, $db_query1) or die($error_msg);
+$res_user = pg_query($db, $db_query1) or die($error_msg . 'sql = ' . $db_query1);
 $new_id_user = pg_fetch_all_columns($res_user, 0)[0];
 
 //получаем макс. id в таблице user_cities
 $db_query2 = "SELECT max(id)+1 FROM $schema.user_cities";
-$res_user_cities = pg_query($db, $db_query2) or die($error_msg);
+$res_user_cities = pg_query($db, $db_query2) or die($error_msg . 'sql = ' . $db_query2);
 $new_id_user_cities = pg_fetch_all_columns($res_user_cities, 0)[0];
 
 //получаем макс. id в таблице cars
 $db_query3 = "SELECT max(id_car)+1 FROM $schema.cars";
-$res_car = pg_query($db, $db_query3) or die($error_msg);
+$res_car = pg_query($db, $db_query3) or die($error_msg . 'sql = ' . $db_query3);
 $new_id_car = pg_fetch_all_columns($res_car, 0)[0];
 
 $first_name = $_POST['firstName'];
@@ -57,6 +57,6 @@ if ($has_car) {
                     VALUES ($new_id_car, '$car_brand', '$color', $new_id_user);";
 }
 
-pg_query($db, $db_query4) or die($error_msg);
+pg_query($db, $db_query4) or die($error_msg . 'sql = ' . $db_query4);
 
 echo "{'success': true}";
