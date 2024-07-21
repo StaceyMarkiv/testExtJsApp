@@ -5,7 +5,7 @@
 require_once "db_connection.php";
 
 $db_query1 = "SELECT max(id)+1 FROM $schema.user_cities";
-$res = pg_query($db, $db_query1) or die('Data load failed:' . pg_last_error());
+$res = pg_query($db, $db_query1) or die('Data load failed:' . pg_last_error() . 'sql = ' . $db_query1);
 $max_id = pg_fetch_all_columns($res, 0)[0];
 
 $id_user = $_POST['id_user'];
@@ -35,6 +35,8 @@ if ($id_city_arr != null) {
                 WHERE id_user=$id_user;";
 }
 
-pg_query($db, $db_query2) or die('Data load failed:' . pg_last_error());
+if ($id_city_arr[0] != -1) {        //-1 приходит, если в форме "Информация о пользователе" текущие города не менялись
+    pg_query($db, $db_query2) or die('Data load failed:' . pg_last_error() . 'sql = ' . $db_query2);
+}
 
 echo "{'success': true}";

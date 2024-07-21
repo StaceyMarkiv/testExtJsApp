@@ -61,13 +61,17 @@ Ext.define("app.view.mainPageView", {
         xtype: "rownumberer",
     }, {
         xtype: 'actioncolumn',
-        width: 25,
+        width: 60,
         menuDisabled: true,
-        menuText: 'Удаление записей',
+        menuText: 'Удаление / Информация',
         items: [{
             icon: '../../resources/images/delete.gif',
             tooltip: 'Удалить запись',
             handler: 'deleteUser'
+        }, '->', {
+            icon: '../../resources/images/info.png',
+            tooltip: 'Информация о пользователе',
+            handler: 'showUserInfo'
         }]
     }, {
         text: "ID",

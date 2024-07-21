@@ -40,11 +40,11 @@ function comboStoreFunc(tableName, id, fieldName) {
     return [nameStore, dataStore];
 }
 
-//создаем хранилище для выпадающего списка ComboBox
+//создаем хранилища для выпадающих списков ComboBox
 let [comboStoreEducation, dataStoreEducation] = comboStoreFunc('education', 'id_grade', 'grade');
 let [comboStoreCity] = comboStoreFunc('cities', 'id_city', 'city_name');
 
-//создание хранилища
+//создание хранилища таблицы
 let mainPageStore = Ext.create("app.store.mainPageStore");
 mainPageStore.load(function (records, operation, success) {
     //после загрузки хранилища заполняем меню кнопки "Фильтры" значениями
@@ -178,25 +178,6 @@ Ext.define('app.view.mainPageController', {
                 if (context.value === context.originalValue && id !== -1) {      //если значение в ячейке не поменялось
                     displayData = dataStoreEducation[id];
                     context.record.data[context.field] = displayData[context.field];
-                } else {
-                    //всплывающее окно предупреждения
-                    Ext.Msg.show({
-                        title: 'Предупреждение',
-                        message: 'Выберите значение из списка',
-                        buttons: Ext.Msg.OK,
-                        icon: Ext.Msg.WARNING,
-                        fn: function (btn) {
-                            if (btn === 'ok') {
-                                //активируем редактор в столбце
-                                let cellEditing = grid.getPlugin('cellplugin');
-
-                                cellEditing.startEditByPosition({
-                                    row: context.rowIdx,
-                                    column: context.colIdx + 1      //"+1", т.к. есть скрытый столбец
-                                });
-                            }
-                        }
-                    });
                 }
             }
         } else if (context.field === 'user') {
@@ -808,16 +789,233 @@ Ext.define('app.view.mainPageController', {
 
         checkbox.up('grid').getView().refresh();
     },
+
+    showUserInfo: function (grid, rowIndex, colIndex) {
+        /*
+            Метод для просмотра информации о пользователе
+            
+            Аргументы:
+            grid - сама таблица
+            rowIndex - индекс строки в локальном хранилище
+            colIndex - индекс столбца
+
+            Метод открывает всплывающее окно с полной инфрмацией о пользователе. Всю иинформацию можно редактировать.
+            По кнопке "Сохранить" все изменения отправляются в БД.
+        */
+
+        let me = this;
+
+        let selectedRecord = grid.getStore().getAt(rowIndex);
+        let id_user = selectedRecord.get('id_user');
+
+        //отправляем запрос в БД по выбранному пользователю
+        Ext.Ajax.request({
+            url: `app/php/get_user_data.php`,
+            params: {
+                'id_user': id_user,
+            },
+            callback: function (opts, success, response) {
+                if (success) {
+                    //Декодируем результат запроса к БД
+                    let obj = Ext.decode(response.responseText);
+
+                    sourceData = obj[0];
+                    displayNames = obj[1];
+
+                    //добавляем в sourceConfig необходимые параметры
+                    sourceConfig = {};
+                    for (const key in displayNames) {
+                        switch (key) {
+                            case 'birthday':
+                                sourceConfig[key] = {
+                                    displayName: displayNames[key],
+                                    renderer: Ext.util.Format.dateRenderer('Y-m-d'),
+                                    editor: {
+                                        xtype: 'datefield',
+                                        format: 'Y-m-d',
+                                    },
+                                }
+                                break;
+                            case 'grade':
+                                sourceConfig[key] = {
+                                    displayName: displayNames[key],
+                                    editor: {
+                                        xtype: 'combobox',
+                                        triggerAction: 'all',
+                                        store: comboStoreEducation,
+                                        editable: false,
+                                        listConfig: {
+                                            minWidth: 250,
+                                            resizable: true
+                                        }
+                                    },
+                                }
+                                break;
+                            case 'city':
+                                sourceConfig[key] = {
+                                    displayName: displayNames[key],
+                                    editor: {
+                                        xtype: 'select-city-picker',
+                                    },
+                                }
+                                break;
+                            default:
+                                sourceConfig[key] = {
+                                    displayName: displayNames[key],
+                                    renderer: function (value, metaData) {
+                                        metaData.style = "white-space: normal;";
+                                        return value;
+                                    }
+                                }
+                        }
+                    }
+
+                    //окно с информацией об пользователе
+                    let win = Ext.create('Ext.window.Window', {
+                        title: 'Информация о пользователе',
+                        scrollable: true,
+                        modal: true,
+
+                        items: [{
+                            xtype: 'propertygrid',
+                            width: 450,
+                            nameColumnWidth: 150,
+                            hideHeaders: true,
+                            emptyText: 'Элементы для отображения отсутствуют',
+                            controller: me,
+
+                            id_grade: null,     //параметр для хранения id выбранной новой ступени образования
+
+                            listeners: {
+                                validateedit: function (editor, context) {
+                                    /*
+                                        Метод для обработки введенного в ячейку значения
+                    
+                                        Аргументы функции:
+                                        editor - редактор столбца
+                                        context - данные, связанные с редактируемой ячейкой
+                    
+                                        Функция должным образом обрабатывает введенное значение и записывает его в хранилище.
+                                    */
+
+                                    let propertygrid = context.grid;
+
+                                    if (context.record.data['name'] === 'grade') {
+                                        //обработка выбора в ComboBox
+                                        let displayData = dataStoreEducation[context.value];
+
+                                        if (displayData) {
+                                            if (displayData[context.record.data['name']] !== context.originalValue) {
+                                                //если выбор в ComboBox не равен исходному значению
+                                                context.record.data['value'] = displayData[context.record.data['name']];
+                                                propertygrid['id_grade'] = parseInt(context.value);     //сохраняем id выбранной новой ступени образования
+                                            }
+                                        } else {
+                                            if (context.value === context.originalValue) {
+                                                //если значение в ячейке не поменялось
+                                                displayData = dataStoreEducation[propertygrid['id_grade']];
+
+                                                if (displayData) {
+                                                    context.record.data['value'] = displayData[context.record.data['name']];
+                                                } else {
+                                                    context.record.data['value'] = context.value;
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    propertygrid.getView().refresh();
+                                }
+                            },
+                        }],
+
+                        dockedItems: [{
+                            xtype: "toolbar",
+                            dock: "bottom",
+                            ui: "footer",
+                            layout: {
+                                pack: "end",
+                            },
+
+                            items: [{
+                                xtype: "button",
+                                width: 160,
+                                text: "Сохранить",
+                                tooltip: "Сохранить изменения в базу данных",
+                                handler: function () {
+                                    let infoGrid = this.up('window').down('propertygrid');
+                                    let userData = infoGrid.getSource();
+
+                                    if (userData['car_brand'] || userData['color']) {       //отправлять в виде строки, иначе при конвертации false потеряется
+                                        userData['has_car'] = 'true';
+                                    } else {
+                                        userData['has_car'] = 'false';
+                                    }
+
+                                    //считываем сохраненное значение id_grade
+                                    userData['id_grade'] = infoGrid['id_grade'];
+
+                                    //если текущие города не менялись
+                                    if (userData['city'] && me.checkedCityIds.length === 0) {
+                                        me.checkedCityIds.push(-1);
+                                    }
+
+                                    delete userData['city'];
+                                    delete userData['grade'];
+
+                                    //сохраняем данные пользователя
+                                    let saveUserParams = {
+                                        'idFieldValue': id_user,
+                                        'newValues': Ext.JSON.encode(userData),
+                                    };
+                                    me.saveFinished = false;
+                                    me.saveChanges('users', saveUserParams);
+
+                                    infoGrid['id_grade'] = null;
+
+                                    let timer = setInterval(function () {
+                                        //убеждаемся, что сохранение в БД окончено
+                                        if (me.saveFinished) {
+                                            clearInterval(timer);
+
+                                            //сохраняем данные о городах
+                                            let saveCitiesParams = {
+                                                'id_user': id_user,
+                                                'id_city': Ext.JSON.encode(me.checkedCityIds),
+                                            };
+                                            me.saveFinished = false;
+                                            me.saveChanges('user_cities', saveCitiesParams);
+
+                                            //перезагружаем хранилище основной таблицы
+                                            grid.getStore().load();
+
+                                            win.close();
+                                        }
+                                    }, 500);
+                                }
+                            }]
+                        }]
+                    });
+
+                    //заполнение таблицы с информацией об пользователе
+                    let infoWindowTable = win.down('propertygrid');
+                    infoWindowTable.getStore().sorters.items = [];      //убираем сортировку левого столбца по алфавиту (записи будут в порядке, полученном из БД)
+                    infoWindowTable.setSource(sourceData, sourceConfig);
+
+                    win.show();
+                }
+            }
+        });
+    },
 });
 
 /*
 TODO:
-- в actioncolumn добавить пункт "Информация", открывающий всплывающее окно с полной информацией по каждому пользователю
-(propertygrid)
-- во всплывающее окно с информацией о пользователе добавить возможность редактирования
 - меню со статистикой в кнопку "Действия":
     - статистика по машинам
     - статистика по городам
     Статистика отображается в виде диаграмм (столбчатая, круговая)
 - добавить возможность сохранять диаграммы в png
+- в таблицу добавить столбец возраст (от поля ДР)
+- сделать интервальный фильтр по возрасту
 */
