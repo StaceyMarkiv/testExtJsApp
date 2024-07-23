@@ -13,6 +13,15 @@ Ext.define('app.model.mainPageModel', {
                 return record.get('last_name') + ' ' + record.get('first_name');
             }
         },
+        {
+            name: 'age',
+            type: 'int',
+            convert: function (val, record) {
+                let today = new Date();
+                let age = Math.floor((today - record.get('birthday')) / (365*24*60*60*1000));
+                return (record.get('birthday') !== null) ? age : null;
+            }
+        },
         { name: 'has_car', type: 'bool', },
     ]
 });

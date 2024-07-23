@@ -91,6 +91,11 @@ Ext.define("app.view.mainPageView", {
             type: 'list',
         }
     }, {
+        text: "Возраст",
+        dataIndex: "age",
+        align: "center",
+        width: 100,
+    }, {
         text: "Образование",
         dataIndex: "grade",
         align: "center",
