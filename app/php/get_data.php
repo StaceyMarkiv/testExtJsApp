@@ -7,6 +7,7 @@ require_once "db_connection.php";
 $db_query = "SELECT users.id_user,
                     users.first_name,
                     users.last_name,
+                    users.birthday,
                     users.has_car::int,
 
                     education.id_grade,
@@ -37,6 +38,7 @@ while ($row = pg_fetch_assoc($result)) {
         'id_user' => $row['id_user'],
         'first_name' => $row['first_name'],
         'last_name' => $row['last_name'],
+        'birthday' => $row['birthday'],
         'has_car' => (bool) $row['has_car'],        //принудительно конвертируем в bool
         'id_grade' => $row['id_grade'],
         'grade' => $row['grade'],

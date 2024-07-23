@@ -4,6 +4,7 @@ Ext.define('app.model.mainPageModel', {
         { name: 'id_user', type: 'int' },
         { name: 'first_name', type: 'string' },
         { name: 'last_name', type: 'string' },
+        { name: 'birthday', type: 'date' },
         { name: 'grade', type: 'string' },
         { name: 'city', type: 'string' },
         {

@@ -232,7 +232,7 @@ Ext.define('app.view.mainPageController', {
 
         let win = Ext.create('Ext.window.Window', {
             title: 'Добавление нового пользователя',
-            height: 230,
+            height: 260,
             width: 400,
             layout: 'fit',
             controller: me,
@@ -266,6 +266,12 @@ Ext.define('app.view.mainPageController', {
                     fieldLabel: 'Фамилия',
                     name: 'lastName',
                     allowBlank: false,
+                }, {
+                    xtype: 'datefield',
+                    itemId: 'birthday',
+                    fieldLabel: 'Дата рождения',
+                    name: 'birthday',
+                    format: 'Y-m-d',
                 }, {
                     xtype: 'combobox',
                     itemId: 'education',
@@ -1018,4 +1024,13 @@ TODO:
 - добавить возможность сохранять диаграммы в png
 - в таблицу добавить столбец возраст (от поля ДР)
 - сделать интервальный фильтр по возрасту
+- изменить логику столбца "Машины":
+    - привязка true/false находится в таблице cars
+    - при снятии галочки машина не удаляется, ей ставится метка false
+    - при постановке галочки проверяется, если у пользователя машина есть - ей ставится true, если нет - вносится новая
+    - новая машина добавляется по кнопке "+"
+- отключить постановку галочек правой кнопкой мыши (override)
+- редактирование из контекстного меню:
+    - таблица cities
+    - таблица education
 */
