@@ -26,12 +26,15 @@ $last_name = $_POST['lastName'];
 $id_grade = $_POST['grade'];
 $id_city_arr = json_decode($_POST['id_city']);
 $has_car = $_POST['hasCar'];
+$birthday = $_POST['birthday'];
 $car_brand = ($_POST['car_brand'] != '') ? $_POST['car_brand'] : 'new_car';
 $color = ($_POST['color'] != '') ? $_POST['color'] : 'new_color';
 
+$birthday = ($birthday != '') ? "'$birthday'" : 'NULL';
+
 //основной запрос
-$db_query4 = "INSERT INTO $schema.users (id_user, first_name, last_name, id_grade, has_car)
-            VALUES ($new_id_user, '$first_name', '$last_name', $id_grade, $has_car);";
+$db_query4 = "INSERT INTO $schema.users (id_user, first_name, last_name, id_grade, birthday, has_car)
+            VALUES ($new_id_user, '$first_name', '$last_name', $id_grade, $birthday, $has_car);";
 
 if ($id_city_arr != null) {
     //добавляем города в таблицу user_cities
