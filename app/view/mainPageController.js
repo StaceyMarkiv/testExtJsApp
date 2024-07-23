@@ -122,6 +122,15 @@ mainPageStore.load(function (records, operation, success) {
     }, 1000);
 });
 
+//переопределяем работу CheckColumn (на клик правой кнопкой мыши галочка не ставится)
+Ext.define('Ext.override.CheckColumn', {
+    override: 'Ext.grid.column.Check',
+    processEvent: function (type, view, cell, recordIndex, cellIndex, e, record, row) {
+        if (type == "mousedown" && e.button > 0) return;
+        return this.callParent(arguments);
+    }
+});
+
 Ext.define('app.view.mainPageController', {
     extend: 'Ext.app.ViewController',
     alias: 'controller.mainPageController',
@@ -1029,7 +1038,6 @@ TODO:
     - при снятии галочки машина не удаляется, ей ставится метка false
     - при постановке галочки проверяется, если у пользователя машина есть - ей ставится true, если нет - вносится новая
     - новая машина добавляется по кнопке "+"
-- отключить постановку галочек правой кнопкой мыши (override)
 - редактирование из контекстного меню:
     - таблица cities
     - таблица education
