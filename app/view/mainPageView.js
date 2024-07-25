@@ -99,12 +99,20 @@ Ext.define("app.view.mainPageView", {
         },
         filter: {
             type: 'list',
-        }
+        },
     }, {
         text: "Возраст",
         dataIndex: "age",
         align: "center",
         width: 100,
+        tdCls: 'ageTdCls',
+        renderer: function (value, metaData, record) {
+            if (record.get('birthday_color')) {
+                //для именинника выделяем возраст цветом и шрифтом
+                metaData.tdStyle = `color: ${record.get('birthday_color')}; font-weight: bold;`; 
+            }
+            return value;
+        },
     }, {
         text: "Образование",
         dataIndex: "grade",

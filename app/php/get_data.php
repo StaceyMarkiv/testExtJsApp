@@ -25,7 +25,12 @@ $db_query = "SELECT users.id_user,
                     CASE
                         WHEN users.birthday IS NULL OR string_agg(cities.city_name, ', ' ORDER BY cities.city_name) IS NULL THEN 'violet'
                         ELSE NULL
-                    END AS missing_data_color
+                    END AS missing_data_color,
+                    CASE
+                        WHEN EXTRACT(MONTH FROM users.birthday) = EXTRACT(MONTH FROM current_date) AND
+                            EXTRACT(DAY FROM users.birthday) = EXTRACT(DAY FROM current_date) THEN 'green'
+                        ELSE NULL
+                    END AS birthday_color
             FROM $schema.users
             JOIN $schema.education ON users.id_grade = education.id_grade
             LEFT JOIN $schema.user_cities ON users.id_user = user_cities.id_user
@@ -50,6 +55,7 @@ while ($row = pg_fetch_assoc($result)) {
         'has_car_color' => $row['has_car_color'],
         'default_car_color' => $row['default_car_color'],
         'missing_data_color' => $row['missing_data_color'],
+        'birthday_color' => $row['birthday_color'],
     );
 }
 
