@@ -21,7 +21,11 @@ $db_query = "SELECT users.id_user,
                     CASE
                         WHEN cars.car_brand = 'new_car' OR cars.color = 'new_color' THEN 'red'
                         ELSE NULL
-                    END AS default_car_color
+                    END AS default_car_color,
+                    CASE
+                        WHEN users.birthday IS NULL OR string_agg(cities.city_name, ', ' ORDER BY cities.city_name) IS NULL THEN 'violet'
+                        ELSE NULL
+                    END AS missing_data_color
             FROM $schema.users
             JOIN $schema.education ON users.id_grade = education.id_grade
             LEFT JOIN $schema.user_cities ON users.id_user = user_cities.id_user
@@ -45,6 +49,7 @@ while ($row = pg_fetch_assoc($result)) {
         'city' => $row['city'],
         'has_car_color' => $row['has_car_color'],
         'default_car_color' => $row['default_car_color'],
+        'missing_data_color' => $row['missing_data_color'],
     );
 }
 

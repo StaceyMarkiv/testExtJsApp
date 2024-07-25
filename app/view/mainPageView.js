@@ -35,21 +35,31 @@ Ext.define("app.view.mainPageView", {
     viewConfig: {
         getRowClass: function (record, rowIndex, rowParams, store) {
             //добавляем каждой строке css класс, опеределяющий ее цвет
+            //порядок отображения цветов зависит от расположения классов в файле main_styles.css
 
-            let showCarOwners = Ext.getCmp('actionsButton').down('#showCarOwnersCheckbox').getValue();      //подсветить пользователей с машиной
+            let showCarOwners = Ext.getCmp('actionsButton').down('#showCarOwnersCheckbox').getValue();          //подсветить пользователей с машиной
             let showDefaultCars = Ext.getCmp('actionsButton').down('#showDefaultCarsCheckbox').getValue();      //машины с данными по умолчанию
+            let showMissingData = Ext.getCmp('actionsButton').down('#showMissingDataCheckbox').getValue();      //пользователи с незаполненными данными
 
             let newRowClass = '';
 
-            if (record.get('has_car_color') === 'blue') {
+            if (record.get('has_car_color')) {
                 newRowClass = (showCarOwners) ? 'has_car' : '';
             }
 
-            if (record.get('default_car_color') === 'red') {
+            if (record.get('default_car_color')) {
                 if (newRowClass) {
                     newRowClass = (showDefaultCars) ? newRowClass + ' default_cars' : newRowClass;
                 } else {
                     newRowClass = (showDefaultCars) ? 'default_cars' : '';
+                }
+            }
+
+            if (record.get('missing_data_color')) {
+                if (newRowClass) {
+                    newRowClass = (showMissingData) ? newRowClass + ' missing_data' : newRowClass;
+                } else {
+                    newRowClass = (showMissingData) ? 'missing_data' : '';
                 }
             }
 
@@ -157,26 +167,28 @@ Ext.define("app.view.mainPageView", {
             text: "Действия",
             id: "actionsButton",
             menu: {
-                width: 350,
+                width: 400,
                 padding: '5 0 5 0',
-                items: [{
+                defaults: {
                     xtype: 'checkbox',
+                    inputValue: true,
+                    margin: '0 0 0 10',
+                    listeners: {
+                        change: 'actionCheckboxFunc'
+                    }
+                },
+                items: [{
                     itemId: 'showCarOwnersCheckbox',
                     boxLabel: 'Показать пользователей с машиной',
                     name: 'carOwners',
-                    inputValue: true,
-                    listeners: {
-                        change: 'showCarOwnersFunc'
-                    }
                 }, {
-                    xtype: 'checkbox',
                     itemId: 'showDefaultCarsCheckbox',
                     boxLabel: 'Показать машины с данными по умолчанию',
                     name: 'carOwners',
-                    inputValue: true,
-                    listeners: {
-                        change: 'showDefaultCarsFunc'
-                    }
+                }, {
+                    itemId: 'showMissingDataCheckbox',
+                    boxLabel: 'Показать пользователей с незаполненными данными',
+                    name: 'carOwners',
                 }],
             }
         }, '->', {
