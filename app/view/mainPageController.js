@@ -44,7 +44,7 @@ function comboStoreFunc(tableName, id, fieldName) {
 let [comboStoreEducation, dataStoreEducation] = comboStoreFunc('education', 'id_grade', 'grade');
 let [comboStoreCity] = comboStoreFunc('cities', 'id_city', 'city_name');
 
-//создание хранилища таблицы
+//создаем хранилище таблицы
 let mainPageStore = Ext.create("app.store.mainPageStore");
 mainPageStore.load(function (records, operation, success) {
     //после загрузки хранилища заполняем меню кнопки "Фильтры" значениями
@@ -141,11 +141,45 @@ Ext.define('app.view.mainPageController', {
     saveFinished: true,             //индикатор окончания загрузки в БД
     id_user: null,                  //id выбранного пользователя
 
-    onAfterrender: function () {
+    onAfterrender: function (grid) {
+        /*
+            Метод для обработки события окончания рендера формы
+            
+            Аргументы:
+            grid - сама таблица
+
+            Метод создает:
+                - маску загрузки
+                - tooltip для столбца "Возраст"
+        */
+
         //создаем маску загрузки
         this.loadMask = new Ext.LoadMask({
             msg: 'Сохранение...',
             target: this.getView()
+        });
+
+        //создаем tooltip для столбца "Возраст"
+        let tipBirthday = Ext.create('Ext.tip.ToolTip', {
+            target: grid.getView().getId(),
+            delegate: grid.getView().itemSelector + ' .ageTdCls',     //собственный tooltip для каждой ячейки столбца
+            trackMouse: true,       //перемещение внутри ячейки не убирает tooltip
+            style: {
+                backgroundColor: 'green',
+            },
+            listeners: {
+                //содержимое tooltip меняется динамически в зависимости от того, какой элемент вызвал tooltip
+                beforeshow: function updateTipBody(tip) {
+                    let tipGridView = tip.target.component;
+                    let record = tipGridView.getRecord(tip.triggerElement);
+
+                    if (record.get('birthday_color')) {
+                        tip.update('У пользователя сегодня день рождения');
+                    } else {
+                        return false;
+                    }
+                }
+            }
         });
     },
 
@@ -1025,6 +1059,5 @@ TODO:
 - редактирование из контекстного меню:
     - таблица cities
     - таблица education
-- индикатор "Сегодня у пользователя ДР"
 - текстовый фильтр
 */
