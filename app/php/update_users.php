@@ -29,9 +29,9 @@ foreach ($new_values as $key => $value) {
             $add_car = ($value == "'true'") ? true : false;
             $remove_car = ($value == "'false'") ? true : false;
         }
-    } else if ($key = 'car_brand') {
+    } else if ($key == 'car_brand') {
         $car_brand = ($value) ? $value : 'new_car';
-    } else if ($key = 'color') {
+    } else if ($key == 'color') {
         $color = ($value) ? $value : 'new_color';
     }
 }
