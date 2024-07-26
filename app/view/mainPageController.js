@@ -622,6 +622,49 @@ Ext.define('app.view.mainPageController', {
         this.cityFilter = filters.add(cityFilterFunc);
     },
 
+    ageFilterChange: function (radiogroup, newValue) {
+        /*
+            Метод для обработки выбора в фильтре "Возраст"
+            
+            Аргументы:
+            radiogroup - меню выбора в фильтре "Возраст"
+            newValue - выбранное в данный момент значение
+
+            Метод добавляет к фильтрам хранилища функцию для фильтрации хранилища по полю 'age'.
+        */
+
+        let grid = radiogroup.up('grid');
+        let filters = grid.getStore().getFilters();
+
+        if (this.ageFilter) {
+            filters.remove(this.ageFilter);
+            this.ageFilter = null;
+        }
+
+        console.log('newValue', newValue);
+
+        //функция фильтрации хранилища по полю 'age'
+        function ageFilterFunc(item) {
+            if (newValue['age'] === 'all') {
+                return true;
+            } else {
+                let ageLimits = newValue['age'].split('_');
+
+                if (ageLimits[0] === 'less') {
+                    return (item.get('age') < parseInt(ageLimits[1]) && item.get('age') !== null);
+                } else if (ageLimits[0] === 'more') {
+                    return item.get('age') > parseInt(ageLimits[1]);
+                } else {
+                    return (item.get('age') >= parseInt(ageLimits[0]) && item.get('age') <= parseInt(ageLimits[1]));
+                }
+
+                // return false;
+            }
+        }
+
+        this.ageFilter = filters.add(ageFilterFunc);
+    },
+
     clearFiltersClick: function (menuItem) {
         /*
             Метод для обработки нажатия на пункт меню "Очистить фильтры"
@@ -652,6 +695,11 @@ Ext.define('app.view.mainPageController', {
             let cityCheckboxgroup = Ext.getCmp('filterButton').down('#cityCheckboxgroup');
             cityCheckboxgroup.eachBox(function (el) {
                 el.setValue(true);
+            });
+
+            let ageRadiogroup = Ext.getCmp('filterButton').down('#ageRadiogroup');
+            ageRadiogroup.setValue({
+                age: 'all'
             });
         }
     },
@@ -1050,7 +1098,6 @@ TODO:
     - статистика по городам
     Статистика отображается в виде диаграмм (столбчатая, круговая)
 - добавить возможность сохранять диаграммы в png
-- сделать интервальный фильтр по возрасту
 - изменить логику столбца "Машины":
     - привязка true/false находится в таблице cars
     - при снятии галочки машина не удаляется, ей ставится метка false
