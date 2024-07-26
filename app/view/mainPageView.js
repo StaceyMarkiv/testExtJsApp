@@ -109,7 +109,7 @@ Ext.define("app.view.mainPageView", {
         renderer: function (value, metaData, record) {
             if (record.get('birthday_color')) {
                 //для именинника выделяем возраст цветом и шрифтом
-                metaData.tdStyle = `color: ${record.get('birthday_color')}; font-weight: bold;`; 
+                metaData.tdStyle = `color: ${record.get('birthday_color')}; font-weight: bold;`;
             }
             return value;
         },
@@ -262,6 +262,51 @@ Ext.define("app.view.mainPageView", {
                             }
                         }, {
                             xtype: 'select-all-button',
+                        }]
+                    }
+                }, {
+                    text: 'Возраст',
+                    itemId: 'ageFilter',
+                    menu: {
+                        items: [{
+                            xtype: 'radiogroup',
+                            itemId: 'ageRadiogroup',
+                            hideEmptyLabel: true,
+                            columns: 1,
+                            width: 150,
+                            scrollable: true,
+                            maxHeight: 250,
+                            items: [{
+                                boxLabel: 'Младше 20 лет',
+                                name: 'age',
+                                inputValue: 'less_20'
+                            }, {
+                                boxLabel: '20-35 лет',
+                                name: 'age',
+                                inputValue: '20_35'
+                            }, {
+                                boxLabel: '35-50 лет',
+                                name: 'age',
+                                inputValue: '35_50'
+                            }, {
+                                boxLabel: '50-65 лет',
+                                name: 'age',
+                                inputValue: '50_65'
+                            }, {
+                                boxLabel: 'Старше 65 лет',
+                                name: 'age',
+                                inputValue: 'more_65'
+                            }, {
+                                xtype: 'menuseparator',
+                            }, {
+                                boxLabel: 'Все записи',
+                                name: 'age',
+                                inputValue: 'all',
+                                checked: true
+                            }],
+                            listeners: {
+                                change: 'ageFilterChange'
+                            }
                         }]
                     }
                 }, {
