@@ -141,6 +141,16 @@ Ext.define('app.view.mainPageController', {
     saveFinished: true,             //индикатор окончания загрузки в БД
     id_user: null,                  //id выбранного пользователя
 
+    gridContextMenu: new Ext.menu.Menu({
+        items: [{
+            itemId: 'editCities',
+            text: 'Редактировать список городов',
+        }, {
+            itemId: 'editEducation',
+            text: 'Редактировать ступени образования',
+        }],
+    }),
+
     onAfterrender: function (grid) {
         /*
             Метод для обработки события окончания рендера формы
@@ -256,8 +266,9 @@ Ext.define('app.view.mainPageController', {
             }
         }
 
-        //обновляем таблицу
-        grid.getView().refresh();
+        //обновляем запись в таблице
+        context.record.commit();
+        grid.getView().refreshNode();
     },
 
     addNewRecord: function (button) {
@@ -641,8 +652,6 @@ Ext.define('app.view.mainPageController', {
             this.ageFilter = null;
         }
 
-        console.log('newValue', newValue);
-
         //функция фильтрации хранилища по полю 'age'
         function ageFilterFunc(item) {
             if (newValue['age'] === 'all') {
@@ -652,13 +661,13 @@ Ext.define('app.view.mainPageController', {
 
                 if (ageLimits[0] === 'less') {
                     return (item.get('age') < parseInt(ageLimits[1]) && item.get('age') !== null);
-                } else if (ageLimits[0] === 'more') {
-                    return item.get('age') > parseInt(ageLimits[1]);
-                } else {
-                    return (item.get('age') >= parseInt(ageLimits[0]) && item.get('age') <= parseInt(ageLimits[1]));
-                }
 
-                // return false;
+                } else if (ageLimits[0] === 'more') {
+                    return item.get('age') >= parseInt(ageLimits[1]);
+
+                } else {
+                    return (item.get('age') >= parseInt(ageLimits[0]) && item.get('age') < parseInt(ageLimits[1]));
+                }
             }
         }
 
@@ -778,7 +787,7 @@ Ext.define('app.view.mainPageController', {
             listeners: {
                 close: function () {
                     //добавляем записи цветовые метки
-                    let store = me.getView().getStore();
+                    let store = me.getView().down('#mainPanel').getStore();
                     let selectedRec = store.findRecord('id_user', me.id_user, 0, false, false, true);
                     selectedRec.set({
                         has_car_color: 'blue',
@@ -844,7 +853,7 @@ Ext.define('app.view.mainPageController', {
 
                                         me.id_user = null;
 
-                                        me.getView().getView().refresh();
+                                        me.getView().down('#mainPanel').getView().refresh();
                                     }
                                 }
                             });
@@ -1089,6 +1098,79 @@ Ext.define('app.view.mainPageController', {
             }
         });
     },
+
+    createContextMenu: function (grid, td, cellIndex, record, tr, rowIndex, event) {
+        /*
+            Функция для обработки вызова контекстного меню на ячейке нажатием правой кнопки мыши
+                
+            Аргументы функции:
+            grid - сама таблица
+            td - html элемент (TD) таблицы для выбранной ячейки
+            cellIndex - индекс выбранной ячейки
+            record - строка с данными хранилища, содержащая выбранную ячейку
+            tr - html элемент (TR) таблицы для выбранной ячейки
+            rowIndex - индекс строки таблицы с выбранной ячейкой
+            event - событие нажатия кнопки
+
+            Функция обрабатывает нажатие правой кнопки мыши и вызывает специализированное контекстное меню
+            только для столбцов "Город" и "Образование".
+        */
+
+        event.stopEvent();
+
+        let thisColumnId = td.dataset.columnid;     //id выбранного столбца
+
+        let educationMenuItem = this.gridContextMenu.getComponent('editEducation');
+        let cityMenuItem = this.gridContextMenu.getComponent('editCities');
+
+        if (['grade', 'city'].includes(thisColumnId)) {
+            if (thisColumnId === 'grade') {
+                cityMenuItem.hide();
+                educationMenuItem.show();
+
+                //чтобы передать новые параметры, нужно сначала удалить предыдущий обработчик
+                educationMenuItem.un("click", this.showSidePanel, this);
+                educationMenuItem.on("click", this.showSidePanel, this, {
+                    'showComponent': 'educationForm',
+                });
+
+            } else if (thisColumnId === 'city') {
+                cityMenuItem.show();
+                educationMenuItem.hide();
+                
+                //чтобы передать новые параметры, нужно сначала удалить предыдущий обработчик
+                cityMenuItem.un("click", this.showSidePanel, this);
+                cityMenuItem.on("click", this.showSidePanel, this, {
+                    'showComponent': 'cityForm',
+                });
+            }
+
+            this.gridContextMenu.showAt(event.getXY());
+        }
+    },
+
+    showSidePanel: function (menuitem, event, formInfo) {
+
+        let sidePanel = this.getView().down('#sidePanel');
+        sidePanel.removeAll();
+
+        if (formInfo['showComponent'] === 'educationForm') {
+            sidePanel.setTitle('Образование');
+            sidePanel.panelContent = 'education';
+
+            sidePanel.add({
+                xtype: 'educationView'
+            });
+
+
+        } else if (formInfo['showComponent'] === 'cityForm') {
+            sidePanel.setTitle('Города');
+            sidePanel.panelContent = 'cities';
+
+        }
+
+        sidePanel.show();
+    },
 });
 
 /*
@@ -1105,6 +1187,4 @@ TODO:
     - новая машина добавляется по кнопке "+"
 - редактирование из контекстного меню:
     - таблица cities
-    - таблица education
-- текстовый фильтр
 */
