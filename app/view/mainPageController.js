@@ -293,9 +293,13 @@ Ext.define('app.view.mainPageController', {
             controller: me,
 
             listeners: {
+                beforeclose: function () {
+                    //возвращаем привязку контроллера к основной форме
+                    Ext.getCmp('mainPageId').setController(me);
+                },
                 close: function () {
                     me.checkedCityIds = [];
-                }
+                },
             },
 
             items: {
@@ -785,6 +789,10 @@ Ext.define('app.view.mainPageController', {
             layout: 'fit',
 
             listeners: {
+                beforeclose: function () {
+                    //возвращаем привязку контроллера к основной форме
+                    Ext.getCmp('mainPageId').setController(me);
+                },
                 close: function () {
                     //добавляем записи цветовые метки
                     let store = me.getView().down('#mainPanel').getStore();
@@ -967,6 +975,13 @@ Ext.define('app.view.mainPageController', {
                         scrollable: true,
                         modal: true,
 
+                        listeners: {
+                            beforeclose: function () {
+                                //возвращаем привязку контроллера к основной форме
+                                Ext.getCmp('mainPageId').setController(me);
+                            }
+                        },
+
                         items: [{
                             xtype: 'propertygrid',
                             width: 450,
@@ -1101,7 +1116,7 @@ Ext.define('app.view.mainPageController', {
 
     createContextMenu: function (grid, td, cellIndex, record, tr, rowIndex, event) {
         /*
-            Функция для обработки вызова контекстного меню на ячейке нажатием правой кнопки мыши
+            Метод для обработки вызова контекстного меню на ячейке нажатием правой кнопки мыши
                 
             Аргументы функции:
             grid - сама таблица
@@ -1112,7 +1127,7 @@ Ext.define('app.view.mainPageController', {
             rowIndex - индекс строки таблицы с выбранной ячейкой
             event - событие нажатия кнопки
 
-            Функция обрабатывает нажатие правой кнопки мыши и вызывает специализированное контекстное меню
+            Метод обрабатывает нажатие правой кнопки мыши и вызывает специализированное контекстное меню
             только для столбцов "Город" и "Образование".
         */
 
@@ -1137,7 +1152,7 @@ Ext.define('app.view.mainPageController', {
             } else if (thisColumnId === 'city') {
                 cityMenuItem.show();
                 educationMenuItem.hide();
-                
+
                 //чтобы передать новые параметры, нужно сначала удалить предыдущий обработчик
                 cityMenuItem.un("click", this.showSidePanel, this);
                 cityMenuItem.on("click", this.showSidePanel, this, {
@@ -1150,8 +1165,18 @@ Ext.define('app.view.mainPageController', {
     },
 
     showSidePanel: function (menuitem, event, formInfo) {
+        /*
+            Метод для вызова боковой панели из контекстного меню
+            
+            Аргументы:
+            menuitem - нажатый пункт меню
+            event - событие нажатия
+            formInfo - дополнительная переданная информация
 
-        let sidePanel = this.getView().down('#sidePanel');
+            Метод открывает боковую панель и заполняет ее данными в соответствии с переданной доп. информацией.
+        */
+
+        let sidePanel = Ext.getCmp('mainPageId').down('#sidePanel');
         sidePanel.removeAll();
 
         if (formInfo['showComponent'] === 'educationForm') {
@@ -1187,7 +1212,5 @@ TODO:
     - новая машина добавляется по кнопке "+"
 - редактирование из контекстного меню:
     - таблица cities
-- после открытия любого всплывающего окна боковая панель удаляется - ИСПРАВИТЬ!!!
-- вставить прокрутку в выпадающий список городов
 - кнопка с информацией, которая считывает README. Если нет интернета, загружается короткое дефолтное описание
 */
