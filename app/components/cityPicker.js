@@ -58,6 +58,8 @@ Ext.define("app.components.cityPicker", {
             itemId: 'cityPickerForm',
             padding: 5,
             floating: true,
+            maxHeight: 250,
+            scrollable: true,
 
             items: [{
                 xtype: 'checkboxgroup',
