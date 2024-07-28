@@ -2,6 +2,7 @@ Ext.define("app.view.mainPageView", {
     extend: "Ext.panel.Panel",
     alias: "widget.mainPageView",
     header: false,
+    id: 'mainPageId',
     controller: "mainPageController",
 
     requires: [
