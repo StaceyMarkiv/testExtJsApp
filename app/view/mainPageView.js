@@ -12,6 +12,8 @@ Ext.define("app.view.mainPageView", {
         'app.components.userPicker',
         'app.view.education.educationController',
         'app.view.education.educationView',
+        'app.view.cities.citiesController',
+        'app.view.cities.citiesView',
     ],
 
     layout: {
