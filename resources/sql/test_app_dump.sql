@@ -57,7 +57,8 @@ SET default_with_oids = false;
 CREATE TABLE test.cars (
     id_car bigint NOT NULL,
     car_brand character varying(100),
-    color character varying(20)
+    color character varying(20),
+    id_user bigint
 );
 
 
@@ -89,6 +90,13 @@ COMMENT ON COLUMN test.cars.car_brand IS 'Марка машины';
 --
 
 COMMENT ON COLUMN test.cars.color IS 'Цвет машины';
+
+
+--
+-- Name: COLUMN cars.id_user; Type: COMMENT; Schema: test; Owner: postgres
+--
+
+COMMENT ON COLUMN test.cars.id_user IS 'Пользователь - владелец машины';
 
 
 --
@@ -155,6 +163,42 @@ COMMENT ON COLUMN test.education.id_grade IS 'id записи';
 --
 
 COMMENT ON COLUMN test.education.grade IS 'Наименование оконченной ступени образования';
+
+
+--
+-- Name: logins; Type: TABLE; Schema: test; Owner: postgres
+--
+
+CREATE TABLE test.logins (
+    id bigint NOT NULL,
+    login character varying(100) NOT NULL,
+    password character varying(100) NOT NULL,
+    first_name character varying(100),
+    last_name character varying(100)
+);
+
+
+ALTER TABLE test.logins OWNER TO postgres;
+
+--
+-- Name: COLUMN logins.id; Type: COMMENT; Schema: test; Owner: postgres
+--
+
+COMMENT ON COLUMN test.logins.id IS 'id записи';
+
+
+--
+-- Name: COLUMN logins.login; Type: COMMENT; Schema: test; Owner: postgres
+--
+
+COMMENT ON COLUMN test.logins.login IS 'Логин';
+
+
+--
+-- Name: COLUMN logins.password; Type: COMMENT; Schema: test; Owner: postgres
+--
+
+COMMENT ON COLUMN test.logins.password IS 'Пароль';
 
 
 --
@@ -267,7 +311,15 @@ COMMENT ON COLUMN test.users.has_car IS 'Наличие машины (да/не�
 -- Data for Name: cars; Type: TABLE DATA; Schema: test; Owner: postgres
 --
 
-COPY test.cars (id_car, car_brand, color) FROM stdin;
+COPY test.cars (id_car, car_brand, color, id_user) FROM stdin;
+1	Lexus	gold	3
+9	new_color	new_color	12
+11	new_car	new_color	21
+12	Cadillac	silver	16
+13	Porsche	black	7
+14	Opel	white	18
+15	new_car	new_color	23
+16	Opel	black	13
 \.
 
 
@@ -291,6 +343,21 @@ COPY test.cities (id_city, city_name) FROM stdin;
 13	Manila
 14	Brasilia
 15	Quebec
+16	Barselona
+17	Edinburgh
+18	Hamburg
+20	Ottawa
+21	Rotterdam
+22	San Diego
+23	Tokyo
+24	Washington
+25	Vienna
+26	Frankfurt am Main
+27	Istanbul
+19	Jakarta
+28	Yokohama
+29	Zagreb
+30	Antwerpen
 \.
 
 
@@ -301,12 +368,22 @@ COPY test.cities (id_city, city_name) FROM stdin;
 COPY test.education (id_grade, grade) FROM stdin;
 1	Среднее образование
 2	Бакалавр
-3	Магистр
 4	Специалист
 5	Средне-специальное образование
 6	Кандидат наук
-7	Доктор наук
 0	Без образования
+7	Доктор наук
+3	Магистр
+\.
+
+
+--
+-- Data for Name: logins; Type: TABLE DATA; Schema: test; Owner: postgres
+--
+
+COPY test.logins (id, login, password, first_name, last_name) FROM stdin;
+1	admin	72727272	Administrator	\N
+2	user	111111	User	\N
 \.
 
 
@@ -323,12 +400,7 @@ COPY test.user_cities (id, id_user, id_city) FROM stdin;
 9	5	5
 10	5	9
 11	5	3
-22	8	8
-23	8	5
-24	8	4
 27	12	8
-28	11	1
-29	11	4
 30	13	5
 31	13	13
 32	13	15
@@ -340,6 +412,21 @@ COPY test.user_cities (id, id_user, id_city) FROM stdin;
 43	9	6
 44	9	5
 45	9	2
+46	16	14
+47	16	6
+48	16	10
+49	17	6
+50	18	7
+51	18	4
+53	20	6
+54	20	5
+55	21	5
+56	21	12
+62	19	6
+64	23	12
+65	23	10
+66	22	11
+67	22	13
 \.
 
 
@@ -348,17 +435,23 @@ COPY test.user_cities (id, id_user, id_city) FROM stdin;
 --
 
 COPY test.users (id_user, first_name, last_name, id_grade, birthday, has_car) FROM stdin;
-8	Laura	Palmers	0	\N	\N
-5	Anna	Daniels	6	\N	\N
 1	John	Carter	1	\N	f
-15	Lisa	Avery	2	\N	t
-13	Laura	Jefferson	1	\N	f
-9	Nina	Ricci	7	\N	t
+23	John	Barney	5	2004-11-19	t
+22	Marge	Lawrens	5	2002-05-05	f
+3	Mattew	Connor	4	\N	t
+21	Matilda	Vans	3	\N	t
+12	Angela	Linney	4	\N	t
+13	Laura	Jefferson	0	\N	t
+19	Anna	Asti	0	1997-07-15	f
+17	Lewis	Roberts	7	1987-07-27	f
+4	David	Nolan	5	1991-05-16	f
+9	Nina	Ricci	7	\N	f
+20	Sabina	Evans	1	\N	f
+5	Anna	Daniels	6	1971-04-13	f
+16	Monica	Andrews	4	1967-07-25	t
+15	Lisa	Avery	2	\N	f
 7	Rosa	Simpson	3	\N	t
-11	Justin	Eduson	6	\N	t
-12	Angela	Linney	4	\N	f
-4	David	Nolan	5	\N	t
-3	Mattew	Connor	3	\N	t
+18	Donald	Trump	4	1958-07-26	t
 \.
 
 
@@ -387,6 +480,14 @@ ALTER TABLE ONLY test.education
 
 
 --
+-- Name: logins logins_pkey; Type: CONSTRAINT; Schema: test; Owner: postgres
+--
+
+ALTER TABLE ONLY test.logins
+    ADD CONSTRAINT logins_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: user_cities user_cities_pkey; Type: CONSTRAINT; Schema: test; Owner: postgres
 --
 
@@ -400,6 +501,14 @@ ALTER TABLE ONLY test.user_cities
 
 ALTER TABLE ONLY test.users
     ADD CONSTRAINT users_pkey PRIMARY KEY (id_user);
+
+
+--
+-- Name: cars cars_id_user_fkey; Type: FK CONSTRAINT; Schema: test; Owner: postgres
+--
+
+ALTER TABLE ONLY test.cars
+    ADD CONSTRAINT cars_id_user_fkey FOREIGN KEY (id_user) REFERENCES test.users(id_user) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
