@@ -10,10 +10,12 @@ Ext.define("app.view.mainPageView", {
         'app.components.selectAllButton',
         'app.components.textFilter',
         'app.components.userPicker',
-        'app.view.education.educationController',
-        'app.view.education.educationView',
         'app.view.cities.citiesController',
         'app.view.cities.citiesView',
+        'app.view.education.educationController',
+        'app.view.education.educationView',
+        'app.view.login.loginController',
+        'app.view.login.loginView',
     ],
 
     layout: {
@@ -26,15 +28,18 @@ Ext.define("app.view.mainPageView", {
     },
 
     items: [{
+        xtype: 'loginView',
+    }, {
         xtype: 'grid',
         title: "Данные пользователей",
         itemId: 'mainPanel',
         flex: 1,
+        hidden: true,
 
         columnLines: true,
         selType: "cellmodel",
         store: mainPageStore,
-    
+
         plugins: [
             'gridfilters',
             {
@@ -46,27 +51,27 @@ Ext.define("app.view.mainPageView", {
                 },
             }
         ],
-    
+
         listeners: {
             afterrender: 'onAfterrender',
             cellcontextmenu: 'createContextMenu'
         },
-    
+
         viewConfig: {
             getRowClass: function (record, rowIndex, rowParams, store) {
                 //добавляем каждой строке css класс, опеределяющий ее цвет
                 //порядок отображения цветов зависит от расположения классов в файле main_styles.css
-    
+
                 let showCarOwners = Ext.getCmp('actionsButton').down('#showCarOwnersCheckbox').getValue();          //подсветить пользователей с машиной
                 let showDefaultCars = Ext.getCmp('actionsButton').down('#showDefaultCarsCheckbox').getValue();      //машины с данными по умолчанию
                 let showMissingData = Ext.getCmp('actionsButton').down('#showMissingDataCheckbox').getValue();      //пользователи с незаполненными данными
-    
+
                 let newRowClass = '';
-    
+
                 if (record.get('has_car_color')) {
                     newRowClass = (showCarOwners) ? 'has_car' : '';
                 }
-    
+
                 if (record.get('default_car_color')) {
                     if (newRowClass) {
                         newRowClass = (showDefaultCars) ? newRowClass + ' default_cars' : newRowClass;
@@ -74,7 +79,7 @@ Ext.define("app.view.mainPageView", {
                         newRowClass = (showDefaultCars) ? 'default_cars' : '';
                     }
                 }
-    
+
                 if (record.get('missing_data_color')) {
                     if (newRowClass) {
                         newRowClass = (showMissingData) ? newRowClass + ' missing_data' : newRowClass;
@@ -82,11 +87,11 @@ Ext.define("app.view.mainPageView", {
                         newRowClass = (showMissingData) ? 'missing_data' : '';
                     }
                 }
-    
+
                 return newRowClass;
             }
         },
-    
+
         columns: [{
             xtype: "rownumberer",
         }, {
@@ -180,7 +185,7 @@ Ext.define("app.view.mainPageView", {
                 checkchange: 'carCheckchange'
             }
         }],
-    
+
         dockedItems: [{
             xtype: "toolbar",
             dock: "bottom",
@@ -188,7 +193,7 @@ Ext.define("app.view.mainPageView", {
             layout: {
                 pack: "center",
             },
-    
+
             items: [{
                 xtype: "button",
                 width: 160,
