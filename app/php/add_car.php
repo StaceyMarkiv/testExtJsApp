@@ -9,9 +9,13 @@ $car_brand = $_POST['carBrand'];
 $color = $_POST['color'];
 
 $db_query = "UPDATE $schema.cars
-            SET car_brand='$car_brand', color='$color'
-            WHERE id_user=$id_user";
+            SET car_brand=$1, color=$2
+            WHERE id_user=$3;";
 
-pg_query($db, $db_query) or die('Data load failed:' . pg_last_error() . 'sql = ' . $db_query);
+//подготовка запроса
+$result = pg_prepare($db, "add_car_query", $db_query);
+
+//запуск запроса на выполнение
+$result = pg_execute($db, "add_car_query", array($car_brand, $color, $id_user)) or die('Data load failed:' . pg_last_error() . 'sql = ' . $db_query);
 
 echo "{'success': true}";
