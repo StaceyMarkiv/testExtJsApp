@@ -12,17 +12,23 @@ Ext.define("app.view.login.loginView", {
     items: [{
         xtype: 'form',
         itemId: 'loginForm',
-        title: 'Вход или регистрация',
+        title: 'Вход',
         frame: true,
         width: 420,
         bodyPadding: 10,
         defaultType: 'textfield',
+
+        fieldDefaults: {
+            anchor: '100%',
+            labelWidth: 150,
+        },
 
         defaults: {
             allowBlank: false,
             msgTarget: 'under',
             enableKeyEvents: true,
             listeners: {
+                afterrender: 'onFormFieldAfterrender',
                 change: 'onFormFieldValueChange',
                 specialkey: 'onSpecialkeyPressed'
             },
@@ -42,9 +48,6 @@ Ext.define("app.view.login.loginView", {
         }],
 
         buttons: [{
-            //     text: 'Зарегистрироваться',
-            //     width: 150
-            // }, '->', {
             text: 'Войти',
             itemId: 'enterButtonId',
             width: 150,
@@ -53,11 +56,5 @@ Ext.define("app.view.login.loginView", {
                 click: 'logInUser'
             }
         }],
-
-        fieldDefaults: {
-            anchor: '100%',
-            labelWidth: 150,
-
-        }
     }]
 });

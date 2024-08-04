@@ -6,6 +6,30 @@ Ext.define('app.view.login.loginController', {
     loginEntered: false,            //параметр проверки, что в поле "Имя пользователя" введено значение
     passwordEntered: false,         //параметр проверки, что в поле "Пароль" введено значение
 
+    onFormFieldAfterrender: function (textfield) {
+        /*
+            Метод для создания всплывающей подсказки для полей ввода
+            
+            Аргументы:
+            textfield - поле ввода
+
+            Метод создает tooltip с собственным текстом для каждого из полей ввода.
+        */
+
+        let tooltipText = '';
+        if (textfield.name === 'user') {
+            tooltipText = 'login: "user"';
+        }
+        if (textfield.name === 'pass') {
+            tooltipText = 'password: "111111"';
+        }
+
+        let tip = Ext.create('Ext.tip.ToolTip', {
+            target: textfield.getId(),
+            html: tooltipText
+        });
+    },
+
     onFormFieldValueChange: function (textfield, newValue) {
         /*
             Метод для обработки ввода логина / пароля
