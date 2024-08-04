@@ -9,9 +9,13 @@ $password_entered = $_POST['pass'];
 
 $db_query = "SELECT *
             FROM $schema.logins
-            WHERE login='$login_entered' AND password='$password_entered'";
+            WHERE login=$1 AND password=$2;";
 
-$result = pg_query($db, $db_query) or die('Data load failed:' . pg_last_error() . 'sql = ' . $db_query);
+//подготовка запроса
+$result = pg_prepare($db, "login_query", $db_query);
+
+//запуск запроса на выполнение
+$result = pg_execute($db, "login_query", array($login_entered, $password_entered)) or die('Data load failed:' . pg_last_error() . 'sql = ' . $db_query);
 
 $rows = pg_fetch_all($result);
 
