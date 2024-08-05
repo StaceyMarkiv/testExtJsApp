@@ -31,7 +31,15 @@ Ext.define("app.view.mainPageView", {
         xtype: 'loginView',
     }, {
         xtype: 'grid',
-        title: "Данные пользователей",
+        header: {
+            title: "Данные пользователей",
+            items: [{
+                xtype: "button",
+                text: "Выход",
+                tooltip: "Выйти из учетной записи",
+                handler: 'logOut'
+            }]
+        },
         itemId: 'mainPanel',
         flex: 1,
         hidden: true,
