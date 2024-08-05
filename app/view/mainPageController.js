@@ -1199,6 +1199,37 @@ Ext.define('app.view.mainPageController', {
 
         sidePanel.show();
     },
+
+    logOut: function (button) {
+        /*
+            Метод для обработки нажатия на кнопку "Выход"
+            
+            Аргументы:
+            button - кнопка "Выход"
+
+            Метод производит выход из учетной записи, скрывает основную форму и показывает
+            стартовую форму ввода логина и пароля. 
+        */
+
+        Ext.Msg.show({
+            title: 'Предупреждение',
+            message: 'Вы точно хотите выйти из учетной записи?',
+            width: 300,
+            buttons: Ext.Msg.OKCANCEL,
+            defaultFocus: 3,        //фокус на кнопке "Отмена"
+            icon: Ext.window.MessageBox.WARNING,
+            fn: function (btn) {
+                if (btn === 'ok') {
+                    let mainGrid = button.up('grid');
+                    mainGrid.hide();
+
+                    let loginFrom = mainGrid.up('panel').down('loginView');
+                    loginFrom.show();
+                    loginFrom.down('form').reset();
+                }
+            },
+        });
+    },
 });
 
 /*
@@ -1217,6 +1248,5 @@ TODO:
     - новая машина добавляется по кнопке "+"
 - кнопка с информацией, которая считывает README. Если нет интернета, загружается короткое дефолтное описание
 - валидация введенных данных до сохранения в БД
-- добавить кнопку "Выйти"
 - добавить админскую панель для управления учетками
 */
