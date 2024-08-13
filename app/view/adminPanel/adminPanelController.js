@@ -72,7 +72,8 @@ Ext.define('app.view.adminPanel.adminPanelController', {
 
         let saveParams = {
             'id': context.record.data['id'],
-            [field]: context.record.data[field],
+            'fieldName': field,
+            'fieldValue': context.record.data[field],
             'action': 'update'
         };
 
