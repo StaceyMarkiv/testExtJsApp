@@ -174,11 +174,19 @@ CREATE TABLE test.logins (
     login character varying(100) NOT NULL,
     password character varying(100) NOT NULL,
     first_name character varying(100),
-    last_name character varying(100)
+    last_name character varying(100),
+    id_role integer
 );
 
 
 ALTER TABLE test.logins OWNER TO postgres;
+
+--
+-- Name: TABLE logins; Type: COMMENT; Schema: test; Owner: postgres
+--
+
+COMMENT ON TABLE test.logins IS 'Логины и пароли';
+
 
 --
 -- Name: COLUMN logins.id; Type: COMMENT; Schema: test; Owner: postgres
@@ -199,6 +207,47 @@ COMMENT ON COLUMN test.logins.login IS 'Логин';
 --
 
 COMMENT ON COLUMN test.logins.password IS 'Пароль';
+
+
+--
+-- Name: COLUMN logins.id_role; Type: COMMENT; Schema: test; Owner: postgres
+--
+
+COMMENT ON COLUMN test.logins.id_role IS 'Роль учетной записи';
+
+
+--
+-- Name: roles; Type: TABLE; Schema: test; Owner: postgres
+--
+
+CREATE TABLE test.roles (
+    id_role integer NOT NULL,
+    role character varying(100),
+    description character varying(200)
+);
+
+
+ALTER TABLE test.roles OWNER TO postgres;
+
+--
+-- Name: COLUMN roles.id_role; Type: COMMENT; Schema: test; Owner: postgres
+--
+
+COMMENT ON COLUMN test.roles.id_role IS 'id записи';
+
+
+--
+-- Name: COLUMN roles.role; Type: COMMENT; Schema: test; Owner: postgres
+--
+
+COMMENT ON COLUMN test.roles.role IS 'Роль учетной записи (разрешенные действия)';
+
+
+--
+-- Name: COLUMN roles.description; Type: COMMENT; Schema: test; Owner: postgres
+--
+
+COMMENT ON COLUMN test.roles.description IS 'Описание прав работы с программой для данной роли';
 
 
 --
@@ -320,6 +369,7 @@ COPY test.cars (id_car, car_brand, color, id_user) FROM stdin;
 14	Opel	white	18
 15	new_car	new_color	23
 16	Opel	black	13
+17	Cadillac	pink	9
 \.
 
 
@@ -381,9 +431,22 @@ COPY test.education (id_grade, grade) FROM stdin;
 -- Data for Name: logins; Type: TABLE DATA; Schema: test; Owner: postgres
 --
 
-COPY test.logins (id, login, password, first_name, last_name) FROM stdin;
-1	admin	72727272	Administrator	\N
-2	user	111111	User	\N
+COPY test.logins (id, login, password, first_name, last_name, id_role) FROM stdin;
+1	admin	12345678	Admin	\N	1
+2	editor	222222	Editor	\N	2
+3	user	111111	User		3
+4	Lucifer	0000	Lucifer	Morningstar	3
+\.
+
+
+--
+-- Data for Name: roles; Type: TABLE DATA; Schema: test; Owner: postgres
+--
+
+COPY test.roles (id_role, role, description) FROM stdin;
+3	user	Может редактировать только данные основной формы
+2	editor	Может редактировать данные основной формы и наполнение выпадающих списков
+1	admin	Полный доступ ко всем функциям, редактирование учетных записей
 \.
 
 
@@ -445,7 +508,7 @@ COPY test.users (id_user, first_name, last_name, id_grade, birthday, has_car) FR
 19	Anna	Asti	0	1997-07-15	f
 17	Lewis	Roberts	7	1987-07-27	f
 4	David	Nolan	5	1991-05-16	f
-9	Nina	Ricci	7	\N	f
+9	Nina	Ricci	7	\N	t
 20	Sabina	Evans	1	\N	f
 5	Anna	Daniels	6	1971-04-13	f
 16	Monica	Andrews	4	1967-07-25	t
@@ -488,6 +551,14 @@ ALTER TABLE ONLY test.logins
 
 
 --
+-- Name: roles roles_pkey; Type: CONSTRAINT; Schema: test; Owner: postgres
+--
+
+ALTER TABLE ONLY test.roles
+    ADD CONSTRAINT roles_pkey PRIMARY KEY (id_role);
+
+
+--
 -- Name: user_cities user_cities_pkey; Type: CONSTRAINT; Schema: test; Owner: postgres
 --
 
@@ -504,11 +575,26 @@ ALTER TABLE ONLY test.users
 
 
 --
+-- Name: fki_fkey_logins_roles; Type: INDEX; Schema: test; Owner: postgres
+--
+
+CREATE INDEX fki_fkey_logins_roles ON test.logins USING btree (id_role);
+
+
+--
 -- Name: cars cars_id_user_fkey; Type: FK CONSTRAINT; Schema: test; Owner: postgres
 --
 
 ALTER TABLE ONLY test.cars
     ADD CONSTRAINT cars_id_user_fkey FOREIGN KEY (id_user) REFERENCES test.users(id_user) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: logins fkey_logins_roles; Type: FK CONSTRAINT; Schema: test; Owner: postgres
+--
+
+ALTER TABLE ONLY test.logins
+    ADD CONSTRAINT fkey_logins_roles FOREIGN KEY (id_role) REFERENCES test.roles(id_role);
 
 
 --
