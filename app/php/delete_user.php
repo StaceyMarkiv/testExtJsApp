@@ -4,6 +4,7 @@
 //подключение к БД
 require_once "db_connection.php";
 
+//получаем параметры из запроса
 $id_user = $_POST['id_user'];
 
 pg_query($db, " DELETE FROM $schema.users

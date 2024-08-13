@@ -8,6 +8,7 @@ $db_query1 = "SELECT max(id_grade)+1 FROM $schema.education";
 $res = pg_query($db, $db_query1) or die('Data load failed:' . pg_last_error() . 'sql = ' . $db_query1);
 $max_id_grade = pg_fetch_all_columns($res, 0)[0];
 
+//получаем параметры из запроса
 $id_grade = isset($_POST['id_grade']) ? $_POST['id_grade'] : null;
 $grade = isset($_POST['grade']) ? $_POST['grade'] : null;
 $action = $_POST['action'];

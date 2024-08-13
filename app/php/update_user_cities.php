@@ -8,6 +8,7 @@ $db_query1 = "SELECT max(id)+1 FROM $schema.user_cities";
 $res = pg_query($db, $db_query1) or die('Data load failed:' . pg_last_error() . 'sql = ' . $db_query1);
 $max_id = pg_fetch_all_columns($res, 0)[0];
 
+//получаем параметры из запроса
 $id_user = $_POST['id_user'];
 $id_city_arr = json_decode($_POST['id_city']);
 

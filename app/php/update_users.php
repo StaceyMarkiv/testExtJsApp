@@ -6,6 +6,7 @@ require_once "db_connection.php";
 
 $error_msg = 'Data load failed:' . pg_last_error();     //сообщение об ошибке выполнения запроса
 
+//получаем параметры из запроса
 $id_field_value = $_POST['idFieldValue'];
 $new_values = json_decode($_POST['newValues']);
 

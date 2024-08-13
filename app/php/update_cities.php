@@ -8,6 +8,7 @@ $db_query1 = "SELECT max(id_city)+1 FROM $schema.cities";
 $res = pg_query($db, $db_query1) or die('Data load failed:' . pg_last_error() . 'sql = ' . $db_query1);
 $max_id_city = pg_fetch_all_columns($res, 0)[0];
 
+//получаем параметры из запроса
 $id_city = isset($_POST['id_city']) ? $_POST['id_city'] : null;
 $city_name = isset($_POST['city_name']) ? $_POST['city_name'] : null;
 $action = $_POST['action'];
