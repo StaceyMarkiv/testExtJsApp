@@ -140,6 +140,7 @@ Ext.define('app.view.mainPageController', {
     checkedCityIds: [],             //массив id всех отмеченных в выпадающем редакторе городов
     saveFinished: true,             //индикатор окончания загрузки в БД
     id_user: null,                  //id выбранного пользователя
+    loginRole: 'user',              //роль учетной записи, от имени которой произведен вход
 
     gridContextMenu: new Ext.menu.Menu({
         items: [{
@@ -291,6 +292,7 @@ Ext.define('app.view.mainPageController', {
             width: 400,
             layout: 'fit',
             controller: me,
+            modal: true,
 
             listeners: {
                 beforeclose: function () {
@@ -444,7 +446,7 @@ Ext.define('app.view.mainPageController', {
             rowIndex - индекс строки в локальном хранилище
             colIndex - индекс столбца
 
-            Метод передает удаляет выбранную запись из локального хранилища и из БД.
+            Метод удаляет выбранную запись из локального хранилища и из БД.
         */
 
         let me = this;
@@ -795,7 +797,7 @@ Ext.define('app.view.mainPageController', {
                 },
                 close: function () {
                     //добавляем записи цветовые метки
-                    let store = me.getView().down('#mainPanel').getStore();
+                    let store = me.getView().down('#userInfoGrid').getStore();
                     let selectedRec = store.findRecord('id_user', me.id_user, 0, false, false, true);
                     selectedRec.set({
                         has_car_color: 'blue',
@@ -861,7 +863,7 @@ Ext.define('app.view.mainPageController', {
 
                                         me.id_user = null;
 
-                                        me.getView().down('#mainPanel').getView().refresh();
+                                        me.getView().down('#userInfoGrid').getView().refresh();
                                     }
                                 }
                             });
@@ -1127,8 +1129,10 @@ Ext.define('app.view.mainPageController', {
             rowIndex - индекс строки таблицы с выбранной ячейкой
             event - событие нажатия кнопки
 
-            Метод обрабатывает нажатие правой кнопки мыши и вызывает специализированное контекстное меню
-            только для столбцов "Город" и "Образование".
+            Метод выполняет следующие действия:
+            - обрабатывает нажатие правой кнопки мыши и вызывает специализированное контекстное меню
+            только для столбцов "Город" и "Образование"
+            - в зависимости от роли учетной записи активирует / деактивирует контекстное меню
         */
 
         event.stopEvent();
@@ -1137,6 +1141,14 @@ Ext.define('app.view.mainPageController', {
 
         let educationMenuItem = this.gridContextMenu.getComponent('editEducation');
         let cityMenuItem = this.gridContextMenu.getComponent('editCities');
+
+        if (this.loginRole === 'user') {
+            educationMenuItem.disable();
+            cityMenuItem.disable();
+        } else {
+            educationMenuItem.enable();
+            cityMenuItem.enable();
+        }
 
         if (['grade', 'city'].includes(thisColumnId)) {
             if (thisColumnId === 'grade') {
@@ -1220,15 +1232,36 @@ Ext.define('app.view.mainPageController', {
             icon: Ext.window.MessageBox.WARNING,
             fn: function (btn) {
                 if (btn === 'ok') {
-                    let mainGrid = button.up('grid');
-                    mainGrid.hide();
+                    let mainPanel = button.up('grid').up('#mainPanel');
+                    mainPanel.hide();
 
-                    let loginFrom = mainGrid.up('panel').down('loginView');
+                    let loginFrom = mainPanel.up('#mainPageId').down('loginView');
                     loginFrom.show();
                     loginFrom.down('form').reset();
                 }
             },
         });
+    },
+
+    onMainPanelBeforeshow: function (panel) {
+        /*
+            Метод для обработки события перед показом главной панели (с формой основной информации и 
+            админской панелью)
+            
+            Аргументы:
+            panel - сама главной панель
+
+            Метод проверяет роль учетной записи, произведшей вход, и по необходимости скрывает / показывает
+            админскую панель. 
+        */
+
+        let adminPanel = panel.down('adminPanelView');
+
+        if (this.loginRole === 'admin') {
+            adminPanel.show();
+        } else {
+            adminPanel.hide();
+        }
     },
 });
 
@@ -1247,6 +1280,5 @@ TODO:
     - при постановке галочки проверяется, если у пользователя машина есть - ей ставится true, если нет - вносится новая
     - новая машина добавляется по кнопке "+"
 - кнопка с информацией, которая считывает README. Если нет интернета, загружается короткое дефолтное описание
-- валидация введенных данных до сохранения в БД
-- добавить админскую панель для управления учетками
+- валидация введенных данных до сохранения в БД + хешированный пароль для учеток
 */

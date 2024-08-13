@@ -6,7 +6,6 @@ Ext.define("app.view.login.loginView", {
     controller: "loginController",
 
     height: '100%',
-    flex: 1,
     layout: 'center',
 
     items: [{

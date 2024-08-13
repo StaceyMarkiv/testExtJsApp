@@ -7,8 +7,13 @@ require_once "db_connection.php";
 $login_entered = $_POST['user'];
 $password_entered = $_POST['pass'];
 
-$db_query = "SELECT *
+$db_query = "SELECT login,
+                    first_name,
+                    last_name,
+
+                    roles.role
             FROM $schema.logins
+            JOIN $schema.roles ON logins.id_role = roles.id_role
             WHERE login=$1 AND password=$2;";
 
 //подготовка запроса

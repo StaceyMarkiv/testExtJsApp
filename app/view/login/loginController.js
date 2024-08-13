@@ -18,10 +18,10 @@ Ext.define('app.view.login.loginController', {
 
         let tooltipText = '';
         if (textfield.name === 'user') {
-            tooltipText = 'login: "user"';
+            tooltipText = 'login: "admin"';
         }
         if (textfield.name === 'pass') {
-            tooltipText = 'password: "111111"';
+            tooltipText = 'password: "12345678"';
         }
 
         let tip = Ext.create('Ext.tip.ToolTip', {
@@ -106,18 +106,21 @@ Ext.define('app.view.login.loginController', {
                     let obj = Ext.decode(response.responseText);
 
                     if (obj) {      //если из БД получены данные по введенному имени пользователя и паролю
-                        let userName = obj[0]['first_name'];
+                        let userName = (obj[0]['first_name']) ? obj[0]['first_name'] : obj[0]['login'];
 
                         //показываем приветственное сообщение
                         Ext.toast({
-                            html: (userName) ? `Добро пожаловать, ${userName}` : 'Добро пожаловать',
+                            html: `Добро пожаловать, ${userName}`,
                             header: false,
-                            width: 200,
+                            // width: 300,
                             align: 't'
                         });
 
                         loginPanel.hide();
-                        loginPanel.up('panel').down('#mainPanel').show();
+
+                        let mainPanel = loginPanel.up('panel').down('#mainPanel');
+                        mainPanel.lookupController().loginRole = obj[0]['role'];
+                        mainPanel.show();
                     } else {
                         Ext.Msg.alert('Предупреждение', 'Неверное имя пользователя или пароль');
 
