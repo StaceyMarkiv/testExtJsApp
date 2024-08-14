@@ -4,8 +4,8 @@
 //подключение к БД
 require_once "db_connection.php";
 
-$db_query1 = "SELECT max(id_grade)+1 FROM $schema.education";
-$res = pg_query($db, $db_query1) or die('Data load failed:' . pg_last_error() . 'sql = ' . $db_query1);
+$db_query = "SELECT max(id_grade)+1 FROM $schema.education";
+$res = pg_query($db, $db_query) or die('Data load failed:' . pg_last_error() . 'sql = ' . $db_query);
 $max_id_grade = pg_fetch_all_columns($res, 0)[0];
 
 //получаем параметры из запроса
@@ -14,19 +14,32 @@ $grade = isset($_POST['grade']) ? $_POST['grade'] : null;
 $action = $_POST['action'];
 
 if ($action == 'add') {
-    $db_query2 = "INSERT INTO $schema.education (id_grade, grade)
-                VALUES ($max_id_grade, '$grade')";
+    $add_query = "INSERT INTO $schema.education (id_grade, grade)
+                VALUES ($max_id_grade, $1)";
+
+    //подготовка запроса
+    $result = pg_prepare($db, "add_query", $add_query);
+    //запуск запроса на выполнение
+    $result = pg_execute($db, "add_query", array($grade)) or die('Data load failed:' . pg_last_error() . 'sql = ' . $add_query);
 
 } else if ($action == 'update') {
-    $db_query2 = "UPDATE $schema.education
-                SET grade='$grade'
-                WHERE id_grade=$id_grade;";
-                
-} else if ($action == 'delete') {
-    $db_query2 = "DELETE FROM $schema.education
-                WHERE id_grade=$id_grade;";
-}
+    $update_query = "UPDATE $schema.education
+                    SET grade=$2
+                    WHERE id_grade=$1;";
 
-pg_query($db, $db_query2) or die('Data load failed:' . pg_last_error() . 'sql = ' . $db_query2);
+    //подготовка запроса
+    $result = pg_prepare($db, "update_query", $update_query);
+    //запуск запроса на выполнение
+    $result = pg_execute($db, "update_query", array($id_grade, $grade)) or die('Data load failed:' . pg_last_error() . 'sql = ' . $update_query);
+
+} else if ($action == 'delete') {
+    $delete_query = "DELETE FROM $schema.education
+                WHERE id_grade=$1;";
+                
+    //подготовка запроса
+    $result = pg_prepare($db, "delete_query", $delete_query);
+    //запуск запроса на выполнение
+    $result = pg_execute($db, "delete_query", array($id_grade)) or die('Data load failed:' . pg_last_error() . 'sql = ' . $delete_query);
+}
 
 echo "{'success': true}";

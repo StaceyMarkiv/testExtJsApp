@@ -30,11 +30,16 @@ $birthday = $_POST['birthday'];
 $car_brand = ($_POST['car_brand'] != '') ? $_POST['car_brand'] : 'new_car';
 $color = ($_POST['color'] != '') ? $_POST['color'] : 'new_color';
 
-$birthday = ($birthday != '') ? "'$birthday'" : 'NULL';
+$birthday = ($birthday != '') ? $birthday : 'NULL';
 
 //основной запрос
-$db_query4 = "INSERT INTO $schema.users (id_user, first_name, last_name, id_grade, birthday, has_car)
-            VALUES ($new_id_user, '$first_name', '$last_name', $id_grade, $birthday, $has_car);";
+$user_query = "INSERT INTO $schema.users (id_user, first_name, last_name, id_grade, birthday, has_car)
+                VALUES ($new_id_user, $1, $2, $3, $4, $5);";
+
+//подготовка запроса
+$result = pg_prepare($db, "user_query", $user_query);
+//запуск запроса на выполнение
+$result = pg_execute($db, "user_query", array($first_name, $last_name, $id_grade, $birthday, $has_car)) or die('Data load failed:' . pg_last_error() . 'sql = ' . $user_query);
 
 if ($id_city_arr != null) {
     //добавляем города в таблицу user_cities
@@ -50,16 +55,21 @@ if ($id_city_arr != null) {
     }
     $city_values_statement = rtrim($city_values_statement, ', ');
 
-    $db_query4 .= " INSERT INTO $schema.user_cities (id, id_user, id_city)
+    $user_cities_query = " INSERT INTO $schema.user_cities (id, id_user, id_city)
                     VALUES $city_values_statement;";
+
+    pg_query($db, $user_cities_query) or die($error_msg . 'sql = ' . $user_cities_query);
 }
 
 if ($has_car) {
     //добавляем машину в таблицу cars
-    $db_query4 .= " INSERT INTO $schema.cars (id_car, car_brand, color, id_user)
-                    VALUES ($new_id_car, '$car_brand', '$color', $new_id_user);";
-}
+    $car_query = " INSERT INTO $schema.cars (id_car, car_brand, color, id_user)
+                    VALUES ($new_id_car, $1, $2, $new_id_user);";
 
-pg_query($db, $db_query4) or die($error_msg . 'sql = ' . $db_query4);
+    //подготовка запроса
+    $result = pg_prepare($db, "car_query", $car_query);
+    //запуск запроса на выполнение
+    $result = pg_execute($db, "car_query", array($car_brand, $color)) or die('Data load failed:' . pg_last_error() . 'sql = ' . $car_query);
+}
 
 echo "{'success': true}";

@@ -370,6 +370,7 @@ COPY test.cars (id_car, car_brand, color, id_user) FROM stdin;
 15	new_car	new_color	23
 16	Opel	black	13
 17	Cadillac	pink	9
+18	opel	red	24
 \.
 
 
@@ -408,6 +409,7 @@ COPY test.cities (id_city, city_name) FROM stdin;
 28	Yokohama
 29	Zagreb
 30	Antwerpen
+31	Oslo
 \.
 
 
@@ -416,14 +418,14 @@ COPY test.cities (id_city, city_name) FROM stdin;
 --
 
 COPY test.education (id_grade, grade) FROM stdin;
-1	Среднее образование
 2	Бакалавр
 4	Специалист
 5	Средне-специальное образование
 6	Кандидат наук
 0	Без образования
 7	Доктор наук
-3	Магистр
+1	Среднее образование
+8	Магистр
 \.
 
 
@@ -432,10 +434,10 @@ COPY test.education (id_grade, grade) FROM stdin;
 --
 
 COPY test.logins (id, login, password, first_name, last_name, id_role) FROM stdin;
-1	admin	12345678	Admin	\N	1
-2	editor	222222	Editor	\N	2
-3	user	111111	User		3
-4	Lucifer	0000	Lucifer	Morningstar	3
+4	Lucifer	$2y$10$DGoAIBnKK.5XyHE7aIfbi.De45mcm4TmNsOhtv0FPOlGOctVDespu	Lucifer	Morningstar	3
+3	user	$2y$10$SsdQjyou1TIgzgaTufCk1uZn5USRqWtsNdMPKgxrKl5rACqJA/c3m	User		3
+1	admin	$2y$10$Wj0zlDWcbrGd4mYs/YUTmO4FGOMXTBFcbA7u40WkPbXwpkkUEYV.W	Admin	\N	1
+2	editor	$2y$10$OZJg1KVqSX4JwsJfCKApBeQYvO.5nsKpSHqHJ0jciPzRRGT9fPrdO	Editor	\N	2
 \.
 
 
@@ -464,9 +466,6 @@ COPY test.user_cities (id, id_user, id_city) FROM stdin;
 10	5	9
 11	5	3
 27	12	8
-30	13	5
-31	13	13
-32	13	15
 36	15	11
 39	7	14
 40	7	7
@@ -481,8 +480,6 @@ COPY test.user_cities (id, id_user, id_city) FROM stdin;
 49	17	6
 50	18	7
 51	18	4
-53	20	6
-54	20	5
 55	21	5
 56	21	12
 62	19	6
@@ -490,6 +487,20 @@ COPY test.user_cities (id, id_user, id_city) FROM stdin;
 65	23	10
 66	22	11
 67	22	13
+68	20	16
+69	20	6
+70	20	9
+71	20	5
+72	20	21
+73	13	14
+74	13	5
+75	13	13
+76	13	15
+77	24	16
+78	24	7
+79	24	20
+80	24	15
+81	24	25
 \.
 
 
@@ -500,20 +511,21 @@ COPY test.user_cities (id, id_user, id_city) FROM stdin;
 COPY test.users (id_user, first_name, last_name, id_grade, birthday, has_car) FROM stdin;
 1	John	Carter	1	\N	f
 23	John	Barney	5	2004-11-19	t
-22	Marge	Lawrens	5	2002-05-05	f
-3	Mattew	Connor	4	\N	t
-21	Matilda	Vans	3	\N	t
-12	Angela	Linney	4	\N	t
 13	Laura	Jefferson	0	\N	t
-19	Anna	Asti	0	1997-07-15	f
-17	Lewis	Roberts	7	1987-07-27	f
 4	David	Nolan	5	1991-05-16	f
 9	Nina	Ricci	7	\N	t
+3	Mattew	Connor	4	\N	t
+19	Anna	Asti	0	1997-07-15	f
 20	Sabina	Evans	1	\N	f
+7	Rosa	Simpson	5	\N	t
+22	Marge	Lawrens	4	2002-05-05	f
+24	Andrew	Donovan	4	1961-05-25	t
+21	Matilda	Vans	0	\N	t
+12	Angela	Linney	8	\N	t
+17	Lewis	Roberts	7	1987-07-27	f
 5	Anna	Daniels	6	1971-04-13	f
 16	Monica	Andrews	4	1967-07-25	t
 15	Lisa	Avery	2	\N	f
-7	Rosa	Simpson	3	\N	t
 18	Donald	Trump	4	1958-07-26	t
 \.
 

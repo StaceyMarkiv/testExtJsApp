@@ -14,7 +14,6 @@ $db_query = "UPDATE $schema.cars
 
 //подготовка запроса
 $result = pg_prepare($db, "add_car_query", $db_query);
-
 //запуск запроса на выполнение
 $result = pg_execute($db, "add_car_query", array($car_brand, $color, $id_user)) or die('Data load failed:' . pg_last_error() . 'sql = ' . $db_query);
 
