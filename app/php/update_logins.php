@@ -4,8 +4,8 @@
 //подключение к БД
 require_once "db_connection.php";
 
-$db_query1 = "SELECT max(id)+1 FROM $schema.logins";
-$res = pg_query($db, $db_query1) or die('Data load failed:' . pg_last_error() . 'sql = ' . $db_query1);
+$db_query = "SELECT max(id)+1 FROM $schema.logins";
+$res = pg_query($db, $db_query) or die('Data load failed:' . pg_last_error() . 'sql = ' . $db_query);
 $max_id = pg_fetch_all_columns($res, 0)[0];
 
 //получаем параметры из запроса
@@ -14,9 +14,13 @@ $id = isset($_POST['id']) ? $_POST['id'] : null;
 
 $field_name = isset($_POST['fieldName']) ? $_POST['fieldName'] : null;
 $field_value = isset($_POST['fieldValue']) ? $_POST['fieldValue'] : null;
+if ($field_name === 'password') {
+    $field_value = password_hash($field_value, PASSWORD_DEFAULT);       //хэшируем пароль
+}
 
 $login = isset($_POST['login']) ? $_POST['login'] : null;
 $password = isset($_POST['password']) ? $_POST['password'] : null;
+$password = password_hash($password, PASSWORD_DEFAULT);         //хэшируем пароль
 $first_name = isset($_POST['first_name']) ? $_POST['first_name'] : null;
 $first_name = ($first_name !== '') ? $first_name : null;
 $last_name = isset($_POST['last_name']) ? $_POST['last_name'] : null;
@@ -40,6 +44,7 @@ if ($action == 'add') {
     $result = pg_prepare($db, "add_query", $add_query);
     //запуск запроса на выполнение
     $result = pg_execute($db, "add_query", array($login, $password, $first_name, $last_name, $id_role)) or die('Data load failed:' . pg_last_error() . 'sql = ' . $add_query);
+
 } else if ($action == 'update') {
     $update_query = "UPDATE $schema.logins
                     SET $field_name = $2
@@ -49,9 +54,10 @@ if ($action == 'add') {
     $result = pg_prepare($db, "update_query", $update_query);
     //запуск запроса на выполнение
     $result = pg_execute($db, "update_query", array($id, $field_value)) or die('Data load failed:' . pg_last_error() . 'sql = ' . $update_query);
+
 } else if ($action == 'delete') {
     $delete_query = "DELETE FROM $schema.logins
-                WHERE id=$1;";
+                    WHERE id=$1;";
 
     //подготовка запроса
     $result = pg_prepare($db, "delete_query", $delete_query);

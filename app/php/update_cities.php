@@ -14,19 +14,32 @@ $city_name = isset($_POST['city_name']) ? $_POST['city_name'] : null;
 $action = $_POST['action'];
 
 if ($action == 'add') {
-    $db_query2 = "INSERT INTO $schema.cities (id_city, city_name)
-                VALUES ($max_id_city, '$city_name')";
+    $add_query = "INSERT INTO $schema.cities (id_city, city_name)
+                VALUES ($max_id_city, $1)";
+
+    //подготовка запроса
+    $result = pg_prepare($db, "add_query", $add_query);
+    //запуск запроса на выполнение
+    $result = pg_execute($db, "add_query", array($city_name)) or die('Data load failed:' . pg_last_error() . 'sql = ' . $add_query);
 
 } else if ($action == 'update') {
-    $db_query2 = "UPDATE $schema.cities
-                SET city_name='$city_name'
-                WHERE id_city=$id_city;";
-                
-} else if ($action == 'delete') {
-    $db_query2 = "DELETE FROM $schema.cities
-                WHERE id_city=$id_city;";
-}
+    $update_query = "UPDATE $schema.cities
+                    SET city_name=$2
+                    WHERE id_city=$1;";
 
-pg_query($db, $db_query2) or die('Data load failed:' . pg_last_error() . 'sql = ' . $db_query2);
+    //подготовка запроса
+    $result = pg_prepare($db, "update_query", $update_query);
+    //запуск запроса на выполнение
+    $result = pg_execute($db, "update_query", array($id_city, $city_name)) or die('Data load failed:' . pg_last_error() . 'sql = ' . $update_query);
+
+} else if ($action == 'delete') {
+    $delete_query = "DELETE FROM $schema.cities
+                    WHERE id_city=$1;";
+
+    //подготовка запроса
+    $result = pg_prepare($db, "delete_query", $delete_query);
+    //запуск запроса на выполнение
+    $result = pg_execute($db, "delete_query", array($id_city)) or die('Data load failed:' . pg_last_error() . 'sql = ' . $delete_query);
+}
 
 echo "{'success': true}";
