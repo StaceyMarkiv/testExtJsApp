@@ -7,6 +7,7 @@ Ext.define("app.view.mainPageView", {
 
     requires: [
         'app.components.cityPicker',
+        'app.components.appInfoButton',
         'app.components.selectAllButton',
         'app.components.textFilter',
         'app.components.userPicker',
@@ -76,6 +77,9 @@ Ext.define("app.view.mainPageView", {
                 header: {
                     title: "Данные пользователей",
                     items: [{
+                        xtype: 'form-info-button',
+                        infoWindowContent: "app/description.html"
+                    }, {
                         xtype: "button",
                         text: "Выход",
                         tooltip: "Выйти из учетной записи",
@@ -84,7 +88,6 @@ Ext.define("app.view.mainPageView", {
                 },
                 itemId: 'userInfoGrid',
                 flex: 1,
-                collapsible: true,
         
                 columnLines: true,
                 frame: true,

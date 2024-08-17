@@ -13,3 +13,10 @@
 .default_cars {
     background-color: tomato;
 }
+
+/* настройка текста описания приложения */
+.description {
+    font-size: 10pt;
+    font-family: sans-serif;
+    line-height: 1.1em;
+}
