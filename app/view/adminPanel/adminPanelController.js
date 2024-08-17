@@ -197,37 +197,47 @@ Ext.define('app.view.adminPanel.adminPanelController', {
         */
 
         let me = this;
+        let mainController = me.getView().lookupController(true);
 
-        Ext.Msg.show({
-            title: 'Предупреждение',
-            message: 'Вы точно хотите удалить запись?',
-            width: 300,
-            buttons: Ext.Msg.OKCANCEL,
-            icon: Ext.window.MessageBox.WARNING,
-            fn: function (btn) {
-                if (btn === 'ok') {
-                    let store = grid.getStore();
-
-                    let saveParams = {
-                        'id': store.getAt(rowIndex).get('id'),
-                        'action': 'delete'
-                    };
-
-                    let mainController = me.getView().lookupController(true);
-                    mainController.saveFinished = false;
-                    mainController.saveChanges('logins', saveParams);
-
-                    let timer = setInterval(function () {
-                        //убеждаемся, что сохранение в БД окончено
-                        if (mainController.saveFinished) {
-                            clearInterval(timer);
-
-                            //обновляем хранилище админской панели
-                            grid.getStore().load();
-                        }
-                    }, 500);
-                }
-            },
+        let store = grid.getStore();
+        let countAdmins = 0;
+        store.each(function (rec) {
+            if (rec.get('role') === 'admin') {
+                countAdmins += 1;
+            }
         });
+
+        if (countAdmins === 1) {
+            Ext.Msg.alert('Предупреждение', 'Нельзя удалить единственную учетную запись с правами администратора.')
+        } else {
+            Ext.Msg.show({
+                title: 'Предупреждение',
+                message: 'Вы точно хотите удалить запись?',
+                width: 300,
+                buttons: Ext.Msg.OKCANCEL,
+                icon: Ext.window.MessageBox.WARNING,
+                fn: function (btn) {
+                    if (btn === 'ok') {
+                        let saveParams = {
+                            'id': store.getAt(rowIndex).get('id'),
+                            'action': 'delete'
+                        };
+
+                        mainController.saveFinished = false;
+                        mainController.saveChanges('logins', saveParams);
+
+                        let timer = setInterval(function () {
+                            //убеждаемся, что сохранение в БД окончено
+                            if (mainController.saveFinished) {
+                                clearInterval(timer);
+
+                                //обновляем хранилище админской панели
+                                grid.getStore().load();
+                            }
+                        }, 500);
+                    }
+                },
+            });
+        }
     },
 });
