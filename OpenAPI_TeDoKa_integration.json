@@ -1,0 +1,2438 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "version": "1.0.0",
+    "title": "Интеграция Орбита-ТеДоКа",
+    "description": "Описание спецификации OpenAPI для сервиса интеграции системы \"Орбита\" с системой \"ТеДоКа\" с описанием методов, endpoint-ов"
+  },
+  "tags": [
+    {
+      "name": "Organizations",
+      "description": "Работа с внешними организациями в системе \"Орбита\""
+    },
+    {
+      "name": "Projects",
+      "description": "Работа с проектами в системе \"Орбита\""
+    },
+    {
+      "name": "Requests",
+      "description": "Работа с запросами в системе \"Орбита\""
+    },
+    {
+      "name": "Files",
+      "description": "Работа с файлами в системе \"Орбита\""
+    },
+    {
+      "name": "Request-priorities",
+      "description": "Справочная информация о приоритетах запросов, доступных в системе \"Орбита\""
+    }
+  ],
+  "paths": {
+    "/organizations/list": {
+      "post": {
+        "tags": [
+          "Organizations"
+        ],
+        "summary": "Получение списка внешних организаций",
+        "description": "Метод предназначен для получения списка внешних организаций, зарегистрированных в системе \"Орбита\"",
+        "operationId": "Organizations_list",
+        "requestBody": {
+          "description": "Возвращает список внешних организаций с возможностью фильтрации и постраничного вывода",
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "type": "object",
+                    "required": [
+                      "username",
+                      "limit",
+                      "offset"
+                    ],
+                    "properties": {
+                      "username": {
+                        "type": "string",
+                        "description": "Пользователь, выполняющий запрос (логин в домене)",
+                        "example": "ivanov.iv"
+                      },
+                      "limit": {
+                        "type": "integer",
+                        "description": "Лимит количества записей на одной странице (по умолчанию может быть задан системой)",
+                        "example": 100
+                      },
+                      "offset": {
+                        "type": "integer",
+                        "description": "Смещение выдачи, начиная с указанной записи (от 0)",
+                        "example": 0
+                      },
+                      "search": {
+                        "type": "string",
+                        "description": "Поиск по названию внешней организации (регистронезависимый, частичное совпадение)",
+                        "example": "ООО Инновации"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/getOrgList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string",
+                          "example": "Внутренняя ошибка сервера"
+                        },
+                        "code": {
+                          "type": "integer",
+                          "example": 500
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects": {
+      "post": {
+        "tags": [
+          "Projects"
+        ],
+        "summary": "Получение полных данных проекта из системы \"Орбита\"",
+        "description": "Метод предназначен для получения полной информации о проекте из системы \"Орбита\". Возвращает все данные, указанные при создании проекта, а также связанные сущности — список иерархий, список исполнителей из внешних организаций и список пользователей проекта",
+        "operationId": "Projects",
+        "requestBody": {
+          "description": "Возвращает полные данные проекта из системы «Орбита» вместе с дополнительными связанными сведениями",
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "type": "object",
+                    "required": [
+                      "username",
+                      "projectId"
+                    ],
+                    "properties": {
+                      "username": {
+                        "type": "string",
+                        "description": "Пользователь, выполняющий запрос (логин в домене)",
+                        "example": "ivanov.iv"
+                      },
+                      "projectId": {
+                        "type": "string",
+                        "description": "Идентификатор (guid) проекта в \"Орбите\"",
+                        "example": "D4DF138D-18F1-4F1F-8E04-0A081E61D06E"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/getFullProjectData"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации входных данных",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": [
+                  {
+                    "error": {
+                      "message": "Параметр projectId пустой или ошибочно заполнен",
+                      "code": 400
+                    }
+                  },
+                  {
+                    "error": {
+                      "message": "Некорректные параметры запроса (Проект создан не из ТеДоКА)",
+                      "code": 400
+                    }
+                  },
+                  {
+                    "error": {
+                      "message": "Некорректные параметры запроса (Проект удален)",
+                      "code": 400
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/projects/create": {
+      "post": {
+        "tags": [
+          "Projects"
+        ],
+        "summary": "Создание нового проекта в системе \"Орбита\"",
+        "description": "Метод предназначен для создания нового проекта в системе \"Орбита\" на основе данных, переданных из системы \"ТеДоКА\". В результате создаётся проект, связанный с соответствующими заданиями и организациями, с настройкой прав и атрибутов в соответствии с ролевой моделью \"Орбиты\"",
+        "operationId": "Projects_create",
+        "requestBody": {
+          "description": "Создаёт новый проект в системе \"Орбита\" на основании данных, полученных из \"ТеДоКА\" и возвращает информацию о созданном проекте",
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "type": "object",
+                    "required": [
+                      "username",
+                      "projectName",
+                      "clientName",
+                      "deliverableNames",
+                      "partners",
+                      "managers",
+                      "teamMembers",
+                      "organizationIds",
+                      "engagementId"
+                    ],
+                    "properties": {
+                      "username": {
+                        "type": "string",
+                        "description": "Пользователь, выполняющий запрос (логин в домене)",
+                        "example": "ivanov.iv"
+                      },
+                      "projectName": {
+                        "type": "string",
+                        "description": "Наименование проекта в \"Орбите\" (заполняется вручную, может меняться в \"Орбите\", изначально равно названию проекта в \"ТеДоКА\")",
+                        "example": "Аналитика эффективности бизнес-процессов"
+                      },
+                      "clientName": {
+                        "type": "string",
+                        "description": "Наименование головного клиента из \"ТеДоКА\"",
+                        "example": "ООО Инновации"
+                      },
+                      "deliverableNames": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Перечень наименований заданий, которые будут связаны с создаваемым проектом из \"ТеДоКА\"",
+                        "example": [
+                          "Задание 001",
+                          "Задание 002"
+                        ]
+                      },
+                      "partners": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Руководители заданий (логины в домене) — руководители всех заданий, для которых создается проект",
+                        "example": [
+                          "petrov.pa",
+                          "sidorov.as"
+                        ]
+                      },
+                      "managers": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Менеджеры (логины в домене) — менеджеры всех заданий, для которых создается проект",
+                        "example": [
+                          "nikolaev.dv",
+                          "smirnova.ev"
+                        ]
+                      },
+                      "teamMembers": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Проектная команда (логины в домене) — участники и старшие участники всех заданий проекта",
+                        "example": [
+                          "volkov.an",
+                          "kuznetsova.el"
+                        ]
+                      },
+                      "organizationIds": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Идентификаторы (guid) внешних организаций, полученные из \"Орбиты\"",
+                        "example": [
+                          "639E9057-34D5-48EF-99D3-2E2AAE993F3A",
+                          "4272C69E-D88A-4915-8F19-50F7E78F8F02"
+                        ]
+                      },
+                      "engagementId": {
+                        "type": "string",
+                        "description": "Идентификатор проекта в \"ТеДоКА\" (должен быть сохранён в \"Орбите\" для обеспечения связи между проектами в двух системах)",
+                        "example": "6B29FC40-CA47-1067-B31D-00DD010662DA"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/getNewProjectData"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации входных данных",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": [
+                  {
+                    "error": {
+                      "message": "Некорректные параметры запроса. Пустой идентификатор проекта из ТеДоКА",
+                      "code": 400
+                    }
+                  },
+                  {
+                    "error": {
+                      "message": "Значение параметра organizationIds пустое или ошибочно заполнено",
+                      "code": 400
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Объект с указанным идентификатором не найден",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string",
+                          "example": "Организация с указанным идентификатором не найдена"
+                        },
+                        "code": {
+                          "type": "integer",
+                          "example": 404
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/projects/update": {
+      "post": {
+        "tags": [
+          "Projects"
+        ],
+        "summary": "Обновление информации о проекте в системе \"Орбита\"",
+        "description": "Метод предназначен для обновления информации о проекте в системе \"Орбита\". После успешного выполнения возвращает актуализированный объект проекта",
+        "operationId": "Projects_update",
+        "requestBody": {
+          "description": "Обновляет данные существующего проекта в системе на основе переданных параметров и возвращает обновлённый объект",
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "type": "object",
+                    "required": [
+                      "projectId",
+                      "clientName",
+                      "projectName",
+                      "deliverableNames",
+                      "partners",
+                      "managers",
+                      "teamMembers",
+                      "organizationIds",
+                      "engagementId"
+                    ],
+                    "properties": {
+                      "username": {
+                        "type": "string",
+                        "description": "Пользователь, который выполняет обновление (логин в домене). Если не передан, то действие происходит от имени системы",
+                        "example": "ivanov.iv"
+                      },
+                      "projectId": {
+                        "type": "string",
+                        "description": "guid проекта в \"Орбите\"",
+                        "example": "D4DF138D-18F1-4F1F-8E04-0A081E61D06E"
+                      },
+                      "clientName": {
+                        "type": "string",
+                        "description": "Наименование головного клиента из \"ТеДоКА\"",
+                        "example": "ООО Инновации"
+                      },
+                      "projectName": {
+                        "type": "string",
+                        "description": "Наименование проекта в \"Орбите\" (заполняется вручную, может меняться в \"Орбите\", изначально равно названию проекта в \"ТеДоКА\")",
+                        "example": "Аналитика эффективности бизнес-процессов"
+                      },
+                      "deliverableNames": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Перечень наименований заданий, которые будут связаны с обновляемым проектом из \"ТеДоКА\"",
+                        "example": [
+                          "Задание 001",
+                          "Задание 002",
+                          "Задание 003"
+                        ]
+                      },
+                      "partners": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Руководители заданий (логины в домене) — руководители всех заданий, для которых создается проект",
+                        "example": [
+                          "petrov.pa",
+                          "sidorov.as"
+                        ]
+                      },
+                      "managers": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Менеджеры (логины в домене) — менеджеры всех заданий, для которых создается проект",
+                        "example": [
+                          "nikolaev.dv",
+                          "smirnova.ev"
+                        ]
+                      },
+                      "teamMembers": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Проектная команда (логины в домене) — участники и старшие участники всех заданий проекта",
+                        "example": [
+                          "volkov.an",
+                          "kuznetsova.el",
+                          "romanov.ia"
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "allOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "description": "guid проекта",
+                              "example": "D4DF138D-18F1-4F1F-8E04-0A081E61D06E"
+                            },
+                            "updatedBy": {
+                              "type": "string",
+                              "description": "Имя пользователя, выполняющего запрос (логин в домене)",
+                              "example": "ivanov.iv"
+                            },
+                            "updatedAt": {
+                              "type": "string",
+                              "description": "Время обновления проекта",
+                              "example": "2025-10-09T14:40:00+03:00"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации входных данных",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": [
+                  {
+                    "error": {
+                      "message": "Параметр projectId пустой или ошибочно заполнен",
+                      "code": 400
+                    }
+                  },
+                  {
+                    "error": {
+                      "message": "Некорректные параметры запроса (Проект создан не из ТеДоКА)",
+                      "code": 400
+                    }
+                  },
+                  {
+                    "error": {
+                      "message": "Некорректные параметры запроса (Проект удален)",
+                      "code": 400
+                    }
+                  },
+                  {
+                    "error": {
+                      "message": "Некорректные параметры запроса (Нет Наименования проекта)",
+                      "code": 400
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "401": {
+            "description": "Пользователь не авторизован",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": [
+                  {
+                    "error": {
+                      "message": "Доступ запрещен",
+                      "code": 401
+                    }
+                  },
+                  {
+                    "error": {
+                      "message": "Недостаточно прав для выполнения операции",
+                      "code": 401
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/projects/delete": {
+      "post": {
+        "tags": [
+          "Projects"
+        ],
+        "summary": "Удаление проекта из системы \"Орбита\"",
+        "description": "Метод предназначен для удаления проекта из системы \"Орбита\". Удаление выполняется синхронно — проект помечается как удалённый сразу после выполнения запроса",
+        "operationId": "Projects_delete",
+        "requestBody": {
+          "description": "Помечает проект с указанным идентификатором как удалённый в системе \"Орбита\"",
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "type": "object",
+                    "required": [
+                      "projectId"
+                    ],
+                    "properties": {
+                      "projectId": {
+                        "type": "string",
+                        "description": "Идентификатор (guid) проекта в Орбите, который необходимо удалить",
+                        "example": "D4DF138D-18F1-4F1F-8E04-0A081E61D06E"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "description": "Ошибка валидации входных данных",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": [
+                  {
+                    "error": {
+                      "message": "Параметр projectId пустой или ошибочно заполнен",
+                      "code": 400
+                    }
+                  },
+                  {
+                    "error": {
+                      "message": "Некорректные параметры запроса (Проект создан не из ТеДоКА)",
+                      "code": 400
+                    }
+                  },
+                  {
+                    "error": {
+                      "message": "Некорректные параметры запроса (Проект удален)",
+                      "code": 400
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "401": {
+            "description": "Пользователь не авторизован",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": [
+                  {
+                    "error": {
+                      "message": "Доступ запрещен",
+                      "code": 401
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": [
+                  {
+                    "error": {
+                      "message": "Не удалось получить данные по проекту",
+                      "code": 500
+                    }
+                  },
+                  {
+                    "error": {
+                      "message": "Внутренняя ошибка сервера",
+                      "code": 500
+                    }
+                  },
+                  {
+                    "error": {
+                      "message": "Ошибка удаления проекта",
+                      "code": 500
+                    }
+                  },
+                  {
+                    "error": {
+                      "message": "Не удалось удалить проект",
+                      "code": 500
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/list": {
+      "post": {
+        "tags": [
+          "Projects"
+        ],
+        "summary": "Получение списка проектов из \"Орбиты\"",
+        "description": "Метод предназначен для получения списка проектов из системы \"Орбита\". Поддерживается постраничная выдача и поиск по названию проекта",
+        "operationId": "Projects_list",
+        "requestBody": {
+          "description": "Возвращает список проектов из системы \"Орбита\" с возможностью фильтрации, пагинации и поиска по названию",
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "type": "object",
+                    "required": [
+                      "username",
+                      "limit",
+                      "offset"
+                    ],
+                    "properties": {
+                      "username": {
+                        "type": "string",
+                        "description": "Пользователь, выполняющий запрос (логин в домене). Используется для определения доступных проектов",
+                        "example": "ivanov.iv"
+                      },
+                      "limit": {
+                        "type": "integer",
+                        "description": "Лимит количества записей на одной странице (по умолчанию может быть задан системой)",
+                        "example": 100
+                      },
+                      "offset": {
+                        "type": "integer",
+                        "description": "Смещение выдачи, начиная с указанной записи (от 0)",
+                        "example": 0
+                      },
+                      "search": {
+                        "type": "string",
+                        "description": "Поиск по названию проекта (регистронезависимый, частичное совпадение)",
+                        "example": "Аналитика эффективности бизнес-процессов"
+                      },
+                      "engagementId": {
+                        "type": "string",
+                        "description": "Идентификатор (guid) проекта в \"ТеДоКА\" для фильтрации связанных проектов",
+                        "example": "dc56e3c5-161d-442a-b024-ca9151317540"
+                      },
+                      "ids": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Перечень идентификаторов (guid) проектов в \"Орбите\"",
+                        "example": [
+                          "D4DF138D-18F1-4F1F-8E04-0A081E61D06E",
+                          "B8DF138D-18F1-4F1F-8E04-0A081E61F52E"
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/getProjectList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string",
+                          "example": "Внутренняя ошибка сервера"
+                        },
+                        "code": {
+                          "type": "integer",
+                          "example": 500
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/requests/list": {
+      "post": {
+        "tags": [
+          "Requests"
+        ],
+        "summary": "Отображение списка запросов по проекту из \"Орбиты\"",
+        "description": "Метод предназначен для получения списка запросов, относящихся к указанному проекту в системе \"Орбита\". Поддерживается фильтрация по различным параметрам, включая автора, исполнителя и элементы иерархии запросов. Результаты возвращаются постранично",
+        "operationId": "Requests_list",
+        "requestBody": {
+          "description": "Возвращает список запросов, связанных с указанным проектом в \"Орбите\", с возможностью фильтрации и пагинации",
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "type": "object",
+                    "required": [
+                      "username",
+                      "projectId",
+                      "limit",
+                      "offset"
+                    ],
+                    "properties": {
+                      "username": {
+                        "type": "string",
+                        "description": "Пользователь, выполняющий запрос (логин в домене)",
+                        "example": "ivanov.iv"
+                      },
+                      "projectId": {
+                        "type": "string",
+                        "description": "Идентификатор (guid) проекта в \"Орбите\", для которого требуется получить список запросов",
+                        "example": "D4DF138D-18F1-4F1F-8E04-0A081E61D06E"
+                      },
+                      "limit": {
+                        "type": "integer",
+                        "description": "Лимит количества записей на одной странице (по умолчанию может быть задан системой)",
+                        "example": 100
+                      },
+                      "offset": {
+                        "type": "integer",
+                        "description": "Смещение выдачи, начиная с указанной записи (от 0)",
+                        "example": 0
+                      },
+                      "search": {
+                        "type": "string",
+                        "description": "Поиск по названию запроса (регистронезависимый, частичное совпадение)",
+                        "example": "ООО Инновации"
+                      },
+                      "hierarchyId": {
+                        "type": "string",
+                        "description": "Идентификатор (guid) иерархии данного запроса",
+                        "example": "D4DF138D-18F1-4F1F-8E04-0A081E61D06E"
+                      },
+                      "creators": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Список логинов автора запроса",
+                        "example": [
+                          "ivanov.iv"
+                        ]
+                      },
+                      "executors": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Список email исполнителя запроса",
+                        "example": [
+                          "john.smith@external.com"
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/getRequestList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации входных данных",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": [
+                  {
+                    "error": {
+                      "message": "Некорректные параметры запроса (не задан или некорректен offset)",
+                      "code": 400
+                    }
+                  },
+                  {
+                    "error": {
+                      "message": "Некорректные параметры запроса (не задан или некорректен limit)",
+                      "code": 400
+                    }
+                  },
+                  {
+                    "error": {
+                      "message": "Параметр projectId пустой или ошибочно заполнен",
+                      "code": 400
+                    }
+                  },
+                  {
+                    "error": {
+                      "message": "Некорректные параметры запроса (Проект создан не из ТеДоКА)",
+                      "code": 400
+                    }
+                  },
+                  {
+                    "error": {
+                      "message": "Некорректные параметры запроса (Проект удален)",
+                      "code": 400
+                    }
+                  },
+                  {
+                    "error": {
+                      "message": "Некорректные параметры запроса (Не удалось получить данные по автору запроса)",
+                      "code": 400
+                    }
+                  },
+                  {
+                    "error": {
+                      "message": "Некорректные параметры запроса (Не удалось получить данные по исполнителю запроса)",
+                      "code": 400
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/requests/create": {
+      "post": {
+        "tags": [
+          "Requests"
+        ],
+        "summary": "Создание нового запроса в системе \"Орбита\"",
+        "description": "Метод предназначен для создания нового запроса в системе \"Орбита\", связанного с указанным проектом. Создание запроса может выполняться в формате multipart/form-data (для передачи файлов)",
+        "operationId": "Requests_create",
+        "requestBody": {
+          "description": "Создаёт новый запрос в системе \"Орбита\" на основании переданных параметров",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "allOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "metadata": {
+                        "type": "object",
+                        "required": [
+                          "username",
+                          "projectId",
+                          "name",
+                          "creatorNames",
+                          "completeAt",
+                          "isConfidential",
+                          "priorityId",
+                          "executorNames"
+                        ],
+                        "properties": {
+                          "username": {
+                            "type": "string",
+                            "description": "Пользователь, выполняющий запрос (логин в домене)",
+                            "example": "ivanov.iv"
+                          },
+                          "projectId": {
+                            "type": "string",
+                            "description": "Идентификатор (guid) проекта в \"Орбите\", к которому относится запрос",
+                            "example": "C2618173-FDC1-498D-B806-1FA876265612"
+                          },
+                          "name": {
+                            "type": "string",
+                            "description": "Наименование запроса",
+                            "example": "Название запроса"
+                          },
+                          "creatorNames": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "description": "Список авторов запроса (логины пользователей в домене)",
+                            "example": [
+                              "login_1"
+                            ]
+                          },
+                          "completeAt": {
+                            "type": "string",
+                            "description": "Срок исполнения запроса (date, ISO 8601)",
+                            "example": "2026-02-11T13:45:30+03:00"
+                          },
+                          "hierarchyId": {
+                            "type": "integer",
+                            "description": "Идентификатор иерархии. Обязателен, если у запроса есть иерархия"
+                          },
+                          "isConfidential": {
+                            "type": "boolean",
+                            "description": "Флаг, указывающий, является ли запрос конфиденциальным",
+                            "example": false
+                          },
+                          "priorityId": {
+                            "type": "string",
+                            "description": "Идентификатор приоритета из справочника приоритетов запросов",
+                            "example": "2"
+                          },
+                          "description": {
+                            "type": "string",
+                            "description": "Текстовое описание запроса",
+                            "example": "Новый запрос для получения какой-то информации"
+                          },
+                          "executorNames": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "description": "Исполнители запроса (логины пользователей в домене)",
+                            "example": [
+                              "login_5"
+                            ]
+                          }
+                        }
+                      },
+                      "files": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "format": "binary"
+                        },
+                        "description": "Список прикрепляемых файлов. Общий максимальный объём - не более 50 МБ",
+                        "example": [
+                          "file1.pdf",
+                          "file2.xlsx"
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "allOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "description": "guid запроса",
+                              "example": "A5BB7758-2BC4-4656-9913-21E956FB757A"
+                            },
+                            "createdBy": {
+                              "type": "string",
+                              "description": "Имя пользователя, выполняющего запрос (логин в домене)",
+                              "example": "ivanov.iv"
+                            },
+                            "createdAt": {
+                              "type": "string",
+                              "description": "Время обновления проекта",
+                              "example": "2025-10-09T14:40:00+03:00"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации входных данных",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": [
+                  {
+                    "error": {
+                      "message": "Пустое поле metadata http-формы. Не определены параметры запроса)",
+                      "code": 400
+                    }
+                  },
+                  {
+                    "error": {
+                      "message": "Некорректные параметры запроса (Отсутствует Наименования запроса)",
+                      "code": 400
+                    }
+                  },
+                  {
+                    "error": {
+                      "message": "Некорректные параметры запроса (Длина Наименования запроса больше 512 символов)",
+                      "code": 400
+                    }
+                  },
+                  {
+                    "error": {
+                      "message": "Параметр projectId пустой или ошибочно заполнен",
+                      "code": 400
+                    }
+                  },
+                  {
+                    "error": {
+                      "message": "Некорректные параметры запроса (Проект создан не из ТеДоКА)",
+                      "code": 400
+                    }
+                  },
+                  {
+                    "error": {
+                      "message": "Некорректные параметры запроса (Проект удален)",
+                      "code": 400
+                    }
+                  },
+                  {
+                    "error": {
+                      "message": "Параметр queryHierarchyId пустой или ошибочно заполнен",
+                      "code": 400
+                    }
+                  },
+                  {
+                    "error": {
+                      "message": "Некорректные параметры запроса",
+                      "code": 400
+                    }
+                  },
+                  {
+                    "error": {
+                      "message": "Некорректные параметры запроса (пустой login автора)",
+                      "code": 400
+                    }
+                  },
+                  {
+                    "error": {
+                      "message": "Некорректные параметры запроса (не нашли автора /***/)",
+                      "code": 400
+                    }
+                  },
+                  {
+                    "error": {
+                      "message": "Некорректные параметры запроса (Нет Автора)",
+                      "code": 400
+                    }
+                  },
+                  {
+                    "error": {
+                      "message": "Некорректные параметры запроса (пустой login исполнителя)",
+                      "code": 400
+                    }
+                  },
+                  {
+                    "error": {
+                      "message": "Некорректные параметры запроса (не нашли исполнителя /***/)",
+                      "code": 400
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Ошибка валидации входных данных",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": [
+                  {
+                    "error": {
+                      "message": "Проект с указанным идентификатором не найден",
+                      "code": 404
+                    }
+                  },
+                  {
+                    "error": {
+                      "message": "Иерархическая папка с указанным идентификатором не найдена",
+                      "code": 404
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": [
+                  {
+                    "error": {
+                      "message": "Не удалось получить данные по проекту",
+                      "code": 500
+                    }
+                  },
+                  {
+                    "error": {
+                      "message": "Не удалось получить номер запроса",
+                      "code": 500
+                    }
+                  },
+                  {
+                    "error": {
+                      "message": "Не удалось получить данные иерархической папки",
+                      "code": 500
+                    }
+                  },
+                  {
+                    "error": {
+                      "message": "Внутренняя ошибка сервера",
+                      "code": 500
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/files/list": {
+      "post": {
+        "tags": [
+          "Files"
+        ],
+        "summary": "Отображение списка файлов по запросам",
+        "description": "Метод предназначен для получения списка файлов, связанных с указанными запросами в системе \"Орбита\". Возвращаются только файлы, относящиеся к файлам ответа(-ов). Поддерживается фильтрация и постраничная выдача",
+        "operationId": "Files_list",
+        "requestBody": {
+          "description": "Возвращает список файлов, относящихся к указанным запросам в системе \"Орбита\". Поддерживается фильтрация по идентификаторам запросов и параметрам файлов",
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "type": "object",
+                    "required": [
+                      "username",
+                      "requestIds",
+                      "limit",
+                      "offset"
+                    ],
+                    "properties": {
+                      "username": {
+                        "type": "string",
+                        "description": "Пользователь, выполняющий запрос (логин в домене)",
+                        "example": "ivanov.iv"
+                      },
+                      "requestIds": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Список идентификаторов (guid) запросов из \"Орбиты\", для которых необходимо получить список файлов",
+                        "example": [
+                          "D4DF138D-18F1-4F1F-8E04-0A081E61D06E"
+                        ]
+                      },
+                      "limit": {
+                        "type": "integer",
+                        "description": "Лимит количества записей на одной странице (по умолчанию может быть задан системой)",
+                        "example": 100
+                      },
+                      "offset": {
+                        "type": "integer",
+                        "description": "Смещение выдачи, начиная с указанной записи (от 0)",
+                        "example": 0
+                      },
+                      "fileName": {
+                        "type": "string",
+                        "description": "Название файла (регистронезависимый поиск по частичному вхождению)",
+                        "example": "отчёт"
+                      },
+                      "fileExts": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Список расширений файлов (без точки)",
+                        "example": [
+                          "pdf"
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/getFilesList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации входных данных",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": [
+                  {
+                    "error": {
+                      "message": "Некорректные параметры запроса (не задан или некорректен offset)",
+                      "code": 400
+                    }
+                  },
+                  {
+                    "error": {
+                      "message": "Некорректные параметры запроса (не задан или некорректен limit)",
+                      "code": 400
+                    }
+                  },
+                  {
+                    "error": {
+                      "message": "Некорректные параметры запроса. Пустой список идентификаторов запросов",
+                      "code": 400
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string",
+                          "example": "Внутренняя ошибка сервера"
+                        },
+                        "code": {
+                          "type": "integer",
+                          "example": 500
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/files/download": {
+      "post": {
+        "tags": [
+          "Files"
+        ],
+        "summary": "Скачивание файла из системы \"Орбита\"",
+        "description": "Метод предназначен для скачивания файла из системы \"Орбита\". Каждый запрос возвращает один файл. Количество одновременных загрузок (потоков) не ограничено",
+        "operationId": "Files_download",
+        "requestBody": {
+          "description": "Возвращает HTTP-поток с содержимым файла, хранящегося в системе \"Орбита\"",
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "type": "object",
+                    "required": [
+                      "username",
+                      "fileId"
+                    ],
+                    "properties": {
+                      "username": {
+                        "type": "string",
+                        "description": "Пользователь, выполняющий запрос (логин в домене)",
+                        "example": "ivanov.iv"
+                      },
+                      "fileId": {
+                        "type": "string",
+                        "description": "Идентификатор (guid) файла в \"Орбите\"",
+                        "example": "D4DF138D-18F1-4F1F-8E04-0A081E61D06E"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Файл загружен успешно",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации входных данных",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": [
+                  {
+                    "error": {
+                      "message": "Параметр fileId пустой или ошибочно заполнен",
+                      "code": 400
+                    }
+                  },
+                  {
+                    "error": {
+                      "message": "Не найден файл",
+                      "code": 400
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": [
+                  {
+                    "error": {
+                      "message": "Не удалось получить файл с сервера",
+                      "code": 500
+                    }
+                  },
+                  {
+                    "error": {
+                      "message": "Внутренняя ошибка сервера",
+                      "code": 500
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/request-priorities/list": {
+      "post": {
+        "tags": [
+          "Request-priorities"
+        ],
+        "summary": "Получение словаря с приоритетами запроса",
+        "description": "Метод предназначен для получения справочной информации о приоритетах запросов, доступных в системе \"Орбита\". Результат содержит идентификаторы и наименования возможных приоритетов, которые могут использоваться при создании или фильтрации запросов",
+        "operationId": "Request-priorities_list",
+        "responses": {
+          "200": {
+            "description": "Успешно",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "description": "guid значения проиритета запроса"
+                          },
+                          "name": {
+                            "type": "string",
+                            "description": "Наименование значения проиритета запроса"
+                          }
+                        }
+                      },
+                      "example": [
+                        {
+                          "id": "0",
+                          "name": "Низкий"
+                        },
+                        {
+                          "id": "1",
+                          "name": "Средний"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string",
+                          "example": "Внутренняя ошибка сервера"
+                        },
+                        "code": {
+                          "type": "integer",
+                          "example": 500
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "responses": {
+      "BadRequestError": {
+        "description": "Ошибка валидации входных данных",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            },
+            "example": [
+              {
+                "error": {
+                  "message": "Некорректные параметры запроса (не задан или некорректен offset)",
+                  "code": 400
+                }
+              },
+              {
+                "error": {
+                  "message": "Некорректные параметры запроса (не задан или некорректен limit)",
+                  "code": 400
+                }
+              }
+            ]
+          }
+        }
+      },
+      "UnauthorizedError": {
+        "description": "Пользователь не авторизован",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Недостаточно прав для выполнения операции"
+                    },
+                    "code": {
+                      "type": "integer",
+                      "example": 401
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "NotFoundError": {
+        "description": "Объект с указанным идентификатором не найден",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Проект с указанным идентификатором не найден"
+                    },
+                    "code": {
+                      "type": "integer",
+                      "example": 404
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "InternalServerError": {
+        "description": "Внутренняя ошибка сервера",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            },
+            "example": [
+              {
+                "error": {
+                  "message": "Не удалось получить данные по проекту",
+                  "code": 500
+                }
+              },
+              {
+                "error": {
+                  "message": "Внутренняя ошибка сервера",
+                  "code": 500
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "schemas": {
+      "OrgData": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "guid организации",
+            "example": "40584361-5077-4700-AF44-D27267567DC1"
+          },
+          "name": {
+            "type": "string",
+            "description": "наименование организации",
+            "example": "ООО Инновации"
+          }
+        }
+      },
+      "Pagination": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "description": "Лимит количества записей на одной странице",
+            "example": 100
+          },
+          "offset": {
+            "type": "integer",
+            "description": "Смещение выдачи, начиная с указанной записи",
+            "example": 0
+          },
+          "total": {
+            "type": "integer",
+            "description": "Всего получено записей",
+            "example": 538
+          }
+        }
+      },
+      "getOrgList": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrgData"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          }
+        }
+      },
+      "NewProjectData": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "guid проекта",
+            "example": "D4DF138D-18F1-4F1F-8E04-0A081E61D06E"
+          },
+          "projectName": {
+            "type": "string",
+            "description": "Наименование проекта в \"Орбите\"",
+            "example": "Аналитика эффективности бизнес-процессов"
+          },
+          "clientName": {
+            "type": "string",
+            "description": "Наименование головного клиента из \"ТеДоКА\"",
+            "example": "ООО Инновации"
+          },
+          "deliverableNames": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Перечень наименований заданий, которые будут связаны с создаваемым проектом из \"ТеДоКА\"",
+            "example": [
+              "Задание 001",
+              "Задание 002"
+            ]
+          },
+          "partners": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Руководители заданий (логины в домене) — руководители всех заданий, для которых создается проект",
+            "example": [
+              "petrov.pa",
+              "sidorov.as"
+            ]
+          },
+          "managers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Менеджеры (логины в домене) — менеджеры всех заданий, для которых создается проект",
+            "example": [
+              "nikolaev.dv",
+              "smirnova.ev"
+            ]
+          },
+          "teamMembers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Проектная команда (логины в домене) — участники и старшие участники всех заданий проекта",
+            "example": [
+              "volkov.an",
+              "kuznetsova.el"
+            ]
+          },
+          "organizationIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Идентификаторы (guid) внешних организаций, полученные из \"Орбиты\"",
+            "example": [
+              "639E9057-34D5-48EF-99D3-2E2AAE993F3A",
+              "4272C69E-D88A-4915-8F19-50F7E78F8F02"
+            ]
+          },
+          "engagementId": {
+            "type": "string",
+            "description": "Идентификатор проекта в \"ТеДоКА\" (должен быть сохранён в \"Орбите\" для обеспечения связи между проектами в двух системах)",
+            "example": "6B29FC40-CA47-1067-B31D-00DD010662DA"
+          },
+          "createdBy": {
+            "type": "string",
+            "description": "Имя пользователя, выполняющего запрос (логин в домене)",
+            "example": "ivanov.iv"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "Время создания проекта",
+            "example": "2025-10-09T14:40:00+03:00"
+          }
+        }
+      },
+      "getNewProjectData": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/NewProjectData"
+          }
+        }
+      },
+      "FullProjectData": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "guid проекта",
+            "example": "D4DF138D-18F1-4F1F-8E04-0A081E61D06E"
+          },
+          "projectName": {
+            "type": "string",
+            "description": "Наименование проекта в \"Орбите\"",
+            "example": "Аналитика эффективности бизнес-процессов"
+          },
+          "clientName": {
+            "type": "string",
+            "description": "Наименование головного клиента из \"ТеДоКА\"",
+            "example": "ООО Альфа Инновации"
+          },
+          "deliverableNames": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Перечень наименований заданий, которые связаны с проектом из \"ТеДоКА\"",
+            "example": [
+              "Задание 001",
+              "Задание 002"
+            ]
+          },
+          "partners": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Руководители заданий (логины в домене) — руководители всех заданий, для которых создается проект",
+            "example": [
+              "petrov.pa",
+              "sidorov.as"
+            ]
+          },
+          "managers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Менеджеры (логины в домене) — менеджеры всех заданий, для которых создается проект",
+            "example": [
+              "nikolaev.dv",
+              "smirnova.ev"
+            ]
+          },
+          "teamMembers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Проектная команда (логины в домене) — участники и старшие участники всех заданий проекта",
+            "example": [
+              "volkov.an",
+              "kuznetsova.el"
+            ]
+          },
+          "organizationIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Идентификаторы (guid) внешних организаций, полученные из \"Орбиты\"",
+            "example": [
+              "639E9057-34D5-48EF-99D3-2E2AAE993F3A",
+              "4272C69E-D88A-4915-8F19-50F7E78F8F02"
+            ]
+          },
+          "engagementId": {
+            "type": "string",
+            "description": "Идентификатор проекта в \"ТеДоКА\" (должен быть сохранён в \"Орбите\" для обеспечения связи между проектами в двух системах)",
+            "example": "6B29FC40-CA47-1067-B31D-00DD010662DA"
+          },
+          "createdBy": {
+            "type": "string",
+            "description": "Имя пользователя, создавшего проект (логин в домене)",
+            "example": "ivanov.iv"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "Время создания проекта",
+            "example": "2025-10-09T14:40:00+03:00"
+          },
+          "hierarchies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HierarchyItem"
+            },
+            "example": [
+              {
+                "id": "E395C56D-E95E-4F75-B4EC-E9EEF9B510E1",
+                "code": "1.3.5",
+                "name": "Финансовая отчетность",
+                "parentId": null
+              },
+              {
+                "id": "3D0BE4D2-F679-421D-8765-551B54E64D68",
+                "code": "1.3.6",
+                "name": "Управленческая отчетность",
+                "parentId": "E395C56D-E95E-4F75-B4EC-E9EEF9B510E1"
+              }
+            ]
+          },
+          "externalExecutors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExternalExecutor"
+            },
+            "example": [
+              {
+                "name": "John Smith",
+                "email": "john.smith@external.com"
+              },
+              {
+                "name": "Иванова Анна",
+                "email": "a.ivanova@external.org"
+              }
+            ]
+          },
+          "additionalTeamMembers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Дополнительные члены команды",
+            "example": [
+              "ivanov.iv",
+              "smirnova.ev"
+            ]
+          }
+        }
+      },
+      "HierarchyItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "parentId": {
+            "type": "string"
+          }
+        }
+      },
+      "ExternalExecutor": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          }
+        }
+      },
+      "getFullProjectData": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/FullProjectData"
+          }
+        }
+      },
+      "ListProjectData": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "guid проекта"
+          },
+          "name": {
+            "type": "string",
+            "description": "наименование проекта"
+          }
+        }
+      },
+      "getProjectList": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ListProjectData"
+            },
+            "example": [
+              {
+                "id": "50ADDD6A-025C-4C6B-B1E6-AE019AB9D535",
+                "name": "Аудит эффективности CAPEX"
+              },
+              {
+                "id": "E4184AE5-48E2-4433-940E-337996951B2A",
+                "name": "Анализ финансовых потоков"
+              },
+              {
+                "id": "74C4FB9F-054B-402D-8CCC-8084A85EB3A8",
+                "name": "Разработка стратегии цифровизации"
+              }
+            ]
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          }
+        }
+      },
+      "ListRequestData": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "guid запроса"
+          },
+          "name": {
+            "type": "string",
+            "description": "Наименование запроса"
+          },
+          "hierarchyId": {
+            "type": "integer",
+            "description": "Идентификатор иерархии данного запроса"
+          },
+          "hierarchyNumber": {
+            "type": "string",
+            "description": "Номер данного запроса в иерархии"
+          },
+          "hierarchyName": {
+            "type": "string",
+            "description": "Наименование данного уровня иерархии"
+          },
+          "creators": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Список логинов автора запроса"
+          },
+          "executors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RequestExecutor"
+            }
+          }
+        }
+      },
+      "RequestExecutor": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          }
+        }
+      },
+      "getRequestList": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ListRequestData"
+            },
+            "example": [
+              {
+                "id": "50ADDD6A-025C-4C6B-B1E6-AE019AB9D535",
+                "name": "Анализ данных по договору №123",
+                "hierarchyId": 501,
+                "hierarchyNumber": "1.2.3",
+                "hierarchyName": "Финансовая отчетность",
+                "creators": [
+                  "ivanov.iv"
+                ],
+                "executors": [
+                  {
+                    "username": "john.smith",
+                    "name": "John Smith",
+                    "email": "john.smith@external.com"
+                  }
+                ]
+              },
+              {
+                "id": "A95E8890-2C03-4741-96BE-B51A0F477E05",
+                "name": "Проверка корректности данных",
+                "hierarchyId": 501,
+                "hierarchyNumber": "1.2.4",
+                "hierarchyName": "Финансовая отчетность",
+                "creators": [
+                  "petrov.pa"
+                ],
+                "executors": [
+                  {
+                    "username": "ivanova.a",
+                    "name": "Иванова Анна",
+                    "email": "a.ivanova@external.org"
+                  }
+                ]
+              }
+            ]
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          }
+        }
+      },
+      "ListFileData": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "description": "guid запроса"
+          },
+          "fileId": {
+            "type": "string",
+            "description": "guid файла"
+          },
+          "fileName": {
+            "type": "string",
+            "description": "Наименование файла"
+          },
+          "fileExt": {
+            "type": "string",
+            "description": "Расширение файла"
+          },
+          "fileSize": {
+            "type": "string",
+            "description": "Размер файла"
+          }
+        }
+      },
+      "getFilesList": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ListFileData"
+            },
+            "example": [
+              {
+                "requestId": "A95E8890-2C03-4741-96BE-B51A0F477E05",
+                "fileId": "0F6021C1-FFA1-4EAE-AA5C-B1AE0F08EAA8",
+                "fileName": "Отчёт по договору №123",
+                "fileExt": "pdf",
+                "fileSize": 234567
+              },
+              {
+                "requestId": "A95E8890-2C03-4741-96BE-B51A0F477E05",
+                "fileId": "C2618173-FDC1-498D-B806-1FA876265612",
+                "fileName": "Финансовый анализ Q2",
+                "fileExt": "xlsx",
+                "fileSize": 128904
+              }
+            ]
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          }
+        }
+      }
+    }
+  }
+}
